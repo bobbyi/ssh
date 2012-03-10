@@ -607,7 +607,7 @@ class Channel (object):
         """
         try:
             out = self.in_buffer.read(nbytes, self.timeout)
-        except PipeTimeout, e:
+        except PipeTimeout as e:
             raise socket.timeout()
 
         ack = self._check_add_window(len(out))
@@ -657,7 +657,7 @@ class Channel (object):
         """
         try:
             out = self.in_stderr_buffer.read(nbytes, self.timeout)
-        except PipeTimeout, e:
+        except PipeTimeout as e:
             raise socket.timeout()
             
         ack = self._check_add_window(len(out))
@@ -1228,7 +1228,7 @@ class ChannelFile (BufferedFile):
         the C{ChannelFile} does nothing but flush the buffer.
     """
 
-    def __init__(self, channel, mode = 'r', bufsize = -1):
+    def __init__(self, channel, mode = 'rb', bufsize = -1):
         self.channel = channel
         BufferedFile.__init__(self)
         self._set_mode(mode, bufsize)
@@ -1250,7 +1250,7 @@ class ChannelFile (BufferedFile):
 
 
 class ChannelStderrFile (ChannelFile):
-    def __init__(self, channel, mode = 'r', bufsize = -1):
+    def __init__(self, channel, mode = 'rb', bufsize = -1):
         ChannelFile.__init__(self, channel, mode, bufsize)
 
     def _read(self, size):

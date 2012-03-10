@@ -92,7 +92,7 @@ class SFTPServer (BaseSFTP, SubsystemHandler):
             except EOFError:
                 self._log(DEBUG, 'EOF -- end of session')
                 return
-            except Exception, e:
+            except Exception as e:
                 self._log(DEBUG, 'Exception on channel: ' + str(e))
                 self._log(DEBUG, util.tb_strings())
                 return
@@ -100,7 +100,7 @@ class SFTPServer (BaseSFTP, SubsystemHandler):
             request_number = msg.get_int()
             try:
                 self._process(t, request_number, msg)
-            except Exception, e:
+            except Exception as e:
                 self._log(DEBUG, 'Exception in server processing: ' + str(e))
                 self._log(DEBUG, util.tb_strings())
                 # send some kind of failure message, at least
@@ -113,9 +113,9 @@ class SFTPServer (BaseSFTP, SubsystemHandler):
         self.server.session_ended()
         super(SFTPServer, self).finish_subsystem()
         # close any file handles that were left open (so we can return them to the OS quickly)
-        for f in self.file_table.itervalues():
+        for f in self.file_table.values():
             f.close()
-        for f in self.folder_table.itervalues():
+        for f in self.folder_table.values():
             f.close()
         self.file_table = {}
         self.folder_table = {}
@@ -179,7 +179,7 @@ class SFTPServer (BaseSFTP, SubsystemHandler):
         for item in arg:
             if type(item) is int:
                 msg.add_int(item)
-            elif type(item) is long:
+            elif type(item) is int:
                 msg.add_int64(item)
             elif type(item) is str:
                 msg.add_string(item)
@@ -187,7 +187,7 @@ class SFTPServer (BaseSFTP, SubsystemHandler):
                 item._pack(msg)
             else:
                 raise Exception('unknown type for ' + repr(item) + ' type ' + repr(type(item)))
-        self._send_packet(t, str(msg))
+        self._send_packet(t, bytes(msg))
 
     def _send_handle_response(self, request_number, handle, folder=False):
         if not issubclass(type(handle), SFTPHandle):
@@ -234,7 +234,7 @@ class SFTPServer (BaseSFTP, SubsystemHandler):
             msg.add_string(attr.filename)
             msg.add_string(str(attr))
             attr._pack(msg)
-        self._send_packet(CMD_NAME, str(msg))
+        self._send_packet(CMD_NAME, bytes(msg))
 
     def _check_file(self, request_number, msg):
         # this extension actually comes from v6 protocol, but since it's an
@@ -293,7 +293,7 @@ class SFTPServer (BaseSFTP, SubsystemHandler):
         msg.add_string('check-file')
         msg.add_string(algname)
         msg.add_bytes(sum_out)
-        self._send_packet(CMD_EXTENDED_REPLY, str(msg))
+        self._send_packet(CMD_EXTENDED_REPLY, bytes(msg))
     
     def _convert_pflags(self, pflags):
         "convert SFTP-style open() flags to python's os.open() flags"

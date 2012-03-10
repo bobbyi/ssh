@@ -28,9 +28,9 @@ from ssh import pipe
 
 
 def delay_thread(pipe):
-    pipe.feed('a')
+    pipe.feed(b'a')
     time.sleep(0.5)
-    pipe.feed('b')
+    pipe.feed(b'b')
     pipe.close()
 
 
@@ -47,38 +47,38 @@ class BufferedPipeTest (unittest.TestCase):
     def test_1_buffered_pipe(self):
         p = BufferedPipe()
         self.assert_(not p.read_ready())
-        p.feed('hello.')
+        p.feed(b'hello.')
         self.assert_(p.read_ready())
         data = p.read(6)
-        self.assertEquals('hello.', data)
+        self.assertEquals(b'hello.', data)
         
-        p.feed('plus/minus')
-        self.assertEquals('plu', p.read(3))
-        self.assertEquals('s/m', p.read(3))
-        self.assertEquals('inus', p.read(4))
+        p.feed(b'plus/minus')
+        self.assertEquals(b'plu', p.read(3))
+        self.assertEquals(b's/m', p.read(3))
+        self.assertEquals(b'inus', p.read(4))
         
         p.close()
         self.assert_(not p.read_ready())
-        self.assertEquals('', p.read(1))
+        self.assertEquals(b'', p.read(1))
 
     def test_2_delay(self):
         p = BufferedPipe()
         self.assert_(not p.read_ready())
         threading.Thread(target=delay_thread, args=(p,)).start()
-        self.assertEquals('a', p.read(1, 0.1))
+        self.assertEquals(b'a', p.read(1, 0.1))
         try:
             p.read(1, 0.1)
             self.assert_(False)
         except PipeTimeout:
             pass
-        self.assertEquals('b', p.read(1, 1.0))
-        self.assertEquals('', p.read(1))
+        self.assertEquals(b'b', p.read(1, 1.0))
+        self.assertEquals(b'', p.read(1))
 
     def test_3_close_while_reading(self):
         p = BufferedPipe()
         threading.Thread(target=close_thread, args=(p,)).start()
         data = p.read(1, 1.0)
-        self.assertEquals('', data)
+        self.assertEquals(b'', data)
 
     def test_4_or_pipe(self):
         p = pipe.make_pipe()

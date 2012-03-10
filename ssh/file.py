@@ -20,7 +20,7 @@
 BufferedFile.
 """
 
-from cStringIO import StringIO
+from io import BytesIO
 
 
 class BufferedFile (object):
@@ -47,8 +47,8 @@ class BufferedFile (object):
         self.newlines = None
         self._flags = 0
         self._bufsize = self._DEFAULT_BUFSIZE
-        self._wbuffer = StringIO()
-        self._rbuffer = ''
+        self._wbuffer = BytesIO()
+        self._rbuffer = b''
         self._at_trailing_cr = False
         self._closed = False
         # pos - position within the file, according to the user
@@ -89,10 +89,10 @@ class BufferedFile (object):
         buffering is not turned on.
         """
         self._write_all(self._wbuffer.getvalue())
-        self._wbuffer = StringIO()
+        self._wbuffer = BytesIO()
         return
 
-    def next(self):
+    def __next__(self):
         """
         Returns the next line from the input, or raises L{StopIteration} when
         EOF is hit.  Unlike python file objects, it's okay to mix calls to
@@ -127,7 +127,7 @@ class BufferedFile (object):
         if (size is None) or (size < 0):
             # go for broke
             result = self._rbuffer
-            self._rbuffer = ''
+            self._rbuffer = b''
             self._pos += len(result)
             while True:
                 try:
@@ -139,12 +139,12 @@ class BufferedFile (object):
                 result += new_data
                 self._realpos += len(new_data)
                 self._pos += len(new_data)
-            return result
+            return self._decode(result)
         if size <= len(self._rbuffer):
             result = self._rbuffer[:size]
             self._rbuffer = self._rbuffer[size:]
             self._pos += len(result)
-            return result
+            return self._decode(result)
         while len(self._rbuffer) < size:
             read_size = size - len(self._rbuffer)
             if self._flags & self.FLAG_BUFFERED:
@@ -160,7 +160,7 @@ class BufferedFile (object):
         result = self._rbuffer[:size]
         self._rbuffer = self._rbuffer[size:]
         self._pos += len(result)
-        return result
+        return self._decode(result)
 
     def readline(self, size=None):
         """
@@ -186,15 +186,16 @@ class BufferedFile (object):
         if not (self._flags & self.FLAG_READ):
             raise IOError('File not open for reading')
         line = self._rbuffer
+        assert isinstance(line,bytes)
         while True:
             if self._at_trailing_cr and (self._flags & self.FLAG_UNIVERSAL_NEWLINE) and (len(line) > 0):
                 # edge case: the newline may be '\r\n' and we may have read
                 # only the first '\r' last time.
-                if line[0] == '\n':
+                if line[0:1] == b'\n':
                     line = line[1:]
-                    self._record_newline('\r\n')
+                    self._record_newline(b'\r\n')
                 else:
-                    self._record_newline('\r')
+                    self._record_newline(b'\r')
                 self._at_trailing_cr = False
             # check size before looking for a linefeed, in case we already have
             # enough.
@@ -204,42 +205,42 @@ class BufferedFile (object):
                     self._rbuffer = line[size:]
                     line = line[:size]
                     self._pos += len(line)
-                    return line
+                    return self._decode(line)
                 n = size - len(line)
             else:
                 n = self._bufsize
-            if ('\n' in line) or ((self._flags & self.FLAG_UNIVERSAL_NEWLINE) and ('\r' in line)):
+            if (b'\n' in line) or ((self._flags & self.FLAG_UNIVERSAL_NEWLINE) and (b'\r' in line)):
                 break
             try:
                 new_data = self._read(n)
             except EOFError:
                 new_data = None
             if (new_data is None) or (len(new_data) == 0):
-                self._rbuffer = ''
+                self._rbuffer = b''
                 self._pos += len(line)
-                return line
+                return self._decode(line)
             line += new_data
             self._realpos += len(new_data)
         # find the newline
-        pos = line.find('\n')
+        pos = line.find(b'\n')
         if self._flags & self.FLAG_UNIVERSAL_NEWLINE:
-            rpos = line.find('\r')
+            rpos = line.find(b'\r')
             if (rpos >= 0) and ((rpos < pos) or (pos < 0)):
                 pos = rpos
         xpos = pos + 1
-        if (line[pos] == '\r') and (xpos < len(line)) and (line[xpos] == '\n'):
+        if (line[pos:pos+1] == b'\r') and (xpos < len(line)) and (line[xpos:xpos+1] == b'\n'):
             xpos += 1
         self._rbuffer = line[xpos:]
         lf = line[pos:xpos]
-        line = line[:pos] + '\n'
-        if (len(self._rbuffer) == 0) and (lf == '\r'):
+        line = line[:pos] + b'\n'
+        if (len(self._rbuffer) == 0) and (lf == b'\r'):
             # we could read the line up to a '\r' and there could still be a
             # '\n' following that we read next time.  note that and eat it.
             self._at_trailing_cr = True
         else:
             self._record_newline(lf)
         self._pos += len(line)
-        return line
+        return self._decode(line)
 
     def readlines(self, sizehint=None):
         """
@@ -306,6 +307,8 @@ class BufferedFile (object):
         @param data: data to write.
         @type data: str
         """
+        data = self._encode(data)
+        assert isinstance(data, bytes)
         if self._closed:
             raise IOError('File is closed')
         if not (self._flags & self.FLAG_WRITE):
@@ -316,12 +319,12 @@ class BufferedFile (object):
         self._wbuffer.write(data)
         if self._flags & self.FLAG_LINE_BUFFERED:
             # only scan the new data for linefeed, to avoid wasting time.
-            last_newline_pos = data.rfind('\n')
+            last_newline_pos = data.rfind(b'\n')
             if last_newline_pos >= 0:
                 wbuf = self._wbuffer.getvalue()
                 last_newline_pos += len(wbuf) - len(data)
                 self._write_all(wbuf[:last_newline_pos + 1])
-                self._wbuffer = StringIO()
+                self._wbuffer = BytesIO()
                 self._wbuffer.write(wbuf[last_newline_pos + 1:])
             return
         # even if we're line buffering, if the buffer has grown past the
@@ -388,7 +391,7 @@ class BufferedFile (object):
     ###  internals...
 
 
-    def _set_mode(self, mode='r', bufsize=-1):
+    def _set_mode(self, mode='rb', bufsize=-1):
         """
         Subclasses call this method to initialize the BufferedFile.
         """
@@ -431,6 +434,8 @@ class BufferedFile (object):
     def _write_all(self, data):
         # the underlying stream may be something that does partial writes (like
         # a socket).
+        if not isinstance(data, bytes):
+            raise TypeError('Need bytes, not str')
         while len(data) > 0:
             count = self._write(data)
             data = data[count:]
@@ -448,9 +453,21 @@ class BufferedFile (object):
         # of just always being a tuple, but we'll emulate that behavior anyway.
         if not (self._flags & self.FLAG_UNIVERSAL_NEWLINE):
             return
+        newline = self._decode(newline)
+        assert isinstance(newline, str)
         if self.newlines is None:
             self.newlines = newline
         elif (type(self.newlines) is str) and (self.newlines != newline):
             self.newlines = (self.newlines, newline)
         elif newline not in self.newlines:
             self.newlines += (newline,)
+
+    def _encode(self, data):
+        if not (self._flags & self.FLAG_BINARY):
+            data = data.encode('ascii')
+        return data
+
+    def _decode(self, data):
+        if not (self._flags & self.FLAG_BINARY):
+            data = data.decode('ascii')
+        return data

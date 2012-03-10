@@ -29,13 +29,13 @@ from ssh.message import Message
 CMD_INIT, CMD_VERSION, CMD_OPEN, CMD_CLOSE, CMD_READ, CMD_WRITE, CMD_LSTAT, CMD_FSTAT, \
            CMD_SETSTAT, CMD_FSETSTAT, CMD_OPENDIR, CMD_READDIR, CMD_REMOVE, CMD_MKDIR, \
            CMD_RMDIR, CMD_REALPATH, CMD_STAT, CMD_RENAME, CMD_READLINK, CMD_SYMLINK \
-           = range(1, 21)
-CMD_STATUS, CMD_HANDLE, CMD_DATA, CMD_NAME, CMD_ATTRS = range(101, 106)
-CMD_EXTENDED, CMD_EXTENDED_REPLY = range(200, 202)
+           = list(range(1, 21))
+CMD_STATUS, CMD_HANDLE, CMD_DATA, CMD_NAME, CMD_ATTRS = list(range(101, 106))
+CMD_EXTENDED, CMD_EXTENDED_REPLY = list(range(200, 202))
 
 SFTP_OK = 0
 SFTP_EOF, SFTP_NO_SUCH_FILE, SFTP_PERMISSION_DENIED, SFTP_FAILURE, SFTP_BAD_MESSAGE, \
-         SFTP_NO_CONNECTION, SFTP_CONNECTION_LOST, SFTP_OP_UNSUPPORTED = range(1, 9)
+         SFTP_NO_CONNECTION, SFTP_CONNECTION_LOST, SFTP_OP_UNSUPPORTED = list(range(1, 9))
 
 SFTP_DESC = [ 'Success',
               'End of file',
@@ -125,7 +125,7 @@ class BaseSFTP (object):
         msg = Message()
         msg.add_int(_VERSION)
         msg.add(*extension_pairs)
-        self._send_packet(CMD_VERSION, str(msg))
+        self._send_packet(CMD_VERSION, bytes(msg))
         return version
         
     def _log(self, level, msg, *args):

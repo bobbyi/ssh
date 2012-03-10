@@ -40,8 +40,8 @@ class PKey (object):
 
     # known encryption types for private key files:
     _CIPHER_TABLE = {
-        'AES-128-CBC': { 'cipher': AES, 'keysize': 16, 'blocksize': 16, 'mode': AES.MODE_CBC },
-        'DES-EDE3-CBC': { 'cipher': DES3, 'keysize': 24, 'blocksize': 8, 'mode': DES3.MODE_CBC },
+        b'AES-128-CBC': { b'cipher': AES, b'keysize': 16, b'blocksize': 16, b'mode': AES.MODE_CBC },
+        b'DES-EDE3-CBC': { b'cipher': DES3, b'keysize': 24, b'blocksize': 8, b'mode': DES3.MODE_CBC },
     }
 
 
@@ -63,7 +63,7 @@ class PKey (object):
         """
         pass
 
-    def __str__(self):
+    def __bytes__(self):
         """
         Return a string of an SSH L{Message} made up of the public part(s) of
         this key.  This string is suitable for passing to L{__init__} to
@@ -72,25 +72,16 @@ class PKey (object):
         @return: string representation of an SSH key message.
         @rtype: str
         """
-        return ''
+        return b''
 
-    def __cmp__(self, other):
-        """
-        Compare this key to another.  Returns 0 if this key is equivalent to
-        the given key, or non-0 if they are different.  Only the public parts
-        of the key are compared, so a public key will compare equal to its
-        corresponding private key.
+    def __str__(self):
+        return b''
 
-        @param other: key to compare to.
-        @type other: L{PKey}
-        @return: 0 if the two keys are equivalent, non-0 otherwise.
-        @rtype: int
+    def __eq__(self, other):
         """
-        hs = hash(self)
-        ho = hash(other)
-        if hs != ho:
-            return cmp(hs, ho)
-        return cmp(str(self), str(other))
+        Compare this key to another.
+        """
+        return bytes(self) == bytes(other)
 
     def get_name(self):
         """
@@ -100,7 +91,7 @@ class PKey (object):
         example, C{"ssh-rsa"}).
         @rtype: str
         """
-        return ''
+        return b''
 
     def get_bits(self):
         """
@@ -131,7 +122,7 @@ class PKey (object):
             format.
         @rtype: str
         """
-        return MD5.new(str(self)).digest()
+        return MD5.new(bytes(self)).digest()
 
     def get_base64(self):
         """
@@ -142,7 +133,7 @@ class PKey (object):
         @return: a base64 string containing the public part of the key.
         @rtype: str
         """
-        return base64.encodestring(str(self)).replace('\n', '')
+        return base64.encodestring(bytes(self)).replace(b'\n', b'')
 
     def sign_ssh_data(self, rng, data):
         """
@@ -156,7 +147,7 @@ class PKey (object):
         @return: an SSH signature message.
         @rtype: L{Message}
         """
-        return ''
+        return b''
 
     def verify_ssh_sig(self, data, msg):
         """
@@ -173,6 +164,7 @@ class PKey (object):
         """
         return False
 
+    @classmethod
     def from_private_key_file(cls, filename, password=None):
         """
         Create a key object by reading a private key file.  If the private
@@ -197,8 +189,8 @@ class PKey (object):
         """
         key = cls(filename=filename, password=password)
         return key
-    from_private_key_file = classmethod(from_private_key_file)
 
+    @classmethod
     def from_private_key(cls, file_obj, password=None):
         """
         Create a key object by reading a private key from a file (or file-like)
@@ -221,7 +213,6 @@ class PKey (object):
         """
         key = cls(file_obj=file_obj, password=password)
         return key
-    from_private_key = classmethod(from_private_key)
 
     def write_private_key_file(self, filename, password=None):
         """
@@ -276,7 +267,7 @@ class PKey (object):
             encrypted, and C{password} is C{None}.
         @raise SSHException: if the key file is invalid.
         """
-        f = open(filename, 'r')
+        f = open(filename, 'rb')
         data = self._read_private_key(tag, f, password)
         f.close()
         return data
@@ -284,46 +275,50 @@ class PKey (object):
     def _read_private_key(self, tag, f, password=None):
         lines = f.readlines()
         start = 0
-        while (start < len(lines)) and (lines[start].strip() != '-----BEGIN ' + tag + ' PRIVATE KEY-----'):
+        if not isinstance(tag, bytes):
+            tag = tag.encode('ascii')
+        if password is not None and not isinstance(password, bytes):
+            password = password.encode('latin-1')
+        while (start < len(lines)) and (lines[start].strip() != b'-----BEGIN ' + tag + b' PRIVATE KEY-----'):
             start += 1
         if start >= len(lines):
-            raise SSHException('not a valid ' + tag + ' private key file')
+            raise SSHException('not a valid ' + tag.decode('ascii') + ' private key file')
         # parse any headers first
         headers = {}
         start += 1
         while start < len(lines):
-            l = lines[start].split(': ')
+            l = lines[start].split(b': ')
             if len(l) == 1:
                 break
             headers[l[0].lower()] = l[1].strip()
             start += 1
         # find end
         end = start
-        while (lines[end].strip() != '-----END ' + tag + ' PRIVATE KEY-----') and (end < len(lines)):
+        while (lines[end].strip() != b'-----END ' + tag + b' PRIVATE KEY-----') and (end < len(lines)):
             end += 1
         # if we trudged to the end of the file, just try to cope.
         try:
-            data = base64.decodestring(''.join(lines[start:end]))
-        except base64.binascii.Error, e:
+            data = base64.decodestring(b''.join(lines[start:end]))
+        except base64.binascii.Error as e:
             raise SSHException('base64 decoding error: ' + str(e))
-        if 'proc-type' not in headers:
+        if b'proc-type' not in headers:
             # unencryped: done
             return data
         # encrypted keyfile: will need a password
-        if headers['proc-type'] != '4,ENCRYPTED':
-            raise SSHException('Unknown private key structure "%s"' % headers['proc-type'])
+        if headers[b'proc-type'] != b'4,ENCRYPTED':
+            raise SSHException('Unknown private key structure "%s"' % headers[b'proc-type'])
         try:
-            encryption_type, saltstr = headers['dek-info'].split(',')
+            encryption_type, saltstr = headers[b'dek-info'].split(b',')
         except:
-            raise SSHException('Can\'t parse DEK-info in private key file')
+            raise SSHException("Can't parse DEK-info in private key file")
         if encryption_type not in self._CIPHER_TABLE:
             raise SSHException('Unknown private key cipher "%s"' % encryption_type)
         # if no password was passed in, raise an exception pointing out that we need one
         if password is None:
             raise PasswordRequiredException('Private key file is encrypted')
-        cipher = self._CIPHER_TABLE[encryption_type]['cipher']
-        keysize = self._CIPHER_TABLE[encryption_type]['keysize']
-        mode = self._CIPHER_TABLE[encryption_type]['mode']
+        cipher = self._CIPHER_TABLE[encryption_type][b'cipher']
+        keysize = self._CIPHER_TABLE[encryption_type][b'keysize']
+        mode = self._CIPHER_TABLE[encryption_type][b'mode']
         salt = unhexlify(saltstr)
         key = util.generate_key_bytes(MD5, salt, password, keysize)
         return cipher.new(key, mode, salt).decrypt(data)
@@ -346,36 +341,40 @@ class PKey (object):
 
         @raise IOError: if there was an error writing the file.
         """
-        f = open(filename, 'w', 0600)
+        f = open(filename, 'wb', 0o600)
         # grrr... the mode doesn't always take hold
-        os.chmod(filename, 0600)
+        os.chmod(filename, 0o600)
         self._write_private_key(tag, f, data, password)
         f.close()
 
     def _write_private_key(self, tag, f, data, password=None):
-        f.write('-----BEGIN %s PRIVATE KEY-----\n' % tag)
+        if not isinstance(tag, bytes):
+            tag = tag.encode('ascii')
+        f.write(b'-----BEGIN ' + tag + b' PRIVATE KEY-----\n')
         if password is not None:
+            if not isinstance(password, bytes):
+                password = password.encode('latin-1')
             # since we only support one cipher here, use it
-            cipher_name = self._CIPHER_TABLE.keys()[0]
-            cipher = self._CIPHER_TABLE[cipher_name]['cipher']
-            keysize = self._CIPHER_TABLE[cipher_name]['keysize']
-            blocksize = self._CIPHER_TABLE[cipher_name]['blocksize']
-            mode = self._CIPHER_TABLE[cipher_name]['mode']
+            cipher_name = list(self._CIPHER_TABLE.keys())[0]
+            cipher = self._CIPHER_TABLE[cipher_name][b'cipher']
+            keysize = self._CIPHER_TABLE[cipher_name][b'keysize']
+            blocksize = self._CIPHER_TABLE[cipher_name][b'blocksize']
+            mode = self._CIPHER_TABLE[cipher_name][b'mode']
             salt = rng.read(8)
             key = util.generate_key_bytes(MD5, salt, password, keysize)
             if len(data) % blocksize != 0:
                 n = blocksize - len(data) % blocksize
                 #data += rng.read(n)
                 # that would make more sense ^, but it confuses openssh.
-                data += '\0' * n
+                data += b'\0' * n
             data = cipher.new(key, mode, salt).encrypt(data)
-            f.write('Proc-Type: 4,ENCRYPTED\n')
-            f.write('DEK-Info: %s,%s\n' % (cipher_name, hexlify(salt).upper()))
-            f.write('\n')
+            f.write(b'Proc-Type: 4,ENCRYPTED\n')
+            f.write(b'DEK-Info: ' + cipher_name + ',' + hexlify(salt).upper() +b'\n')
+            f.write(b'\n')
         s = base64.encodestring(data)
         # re-wrap to 64-char lines
-        s = ''.join(s.split('\n'))
-        s = '\n'.join([s[i : i+64] for i in range(0, len(s), 64)])
+        s = b''.join(s.split(b'\n'))
+        s = b'\n'.join([s[i : i+64] for i in range(0, len(s), 64)])
         f.write(s)
-        f.write('\n')
-        f.write('-----END %s PRIVATE KEY-----\n' % tag)
+        f.write(b'\n')
+        f.write(b'-----END ' + tag + b' PRIVATE KEY-----\n')

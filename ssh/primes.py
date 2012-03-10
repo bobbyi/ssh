@@ -84,7 +84,7 @@ class ModulusPack (object):
         tries = int(tries)
         size = int(size)
         generator = int(generator)
-        modulus = long(modulus, 16)
+        modulus = int(modulus, 16)
 
         # weed out primes that aren't at least:
         # type 2 (meets basic structural requirements)
@@ -124,7 +124,7 @@ class ModulusPack (object):
         f.close()
 
     def get_modulus(self, min, prefer, max):
-        bitsizes = self.pack.keys()
+        bitsizes = list(self.pack.keys())
         bitsizes.sort()
         if len(bitsizes) == 0:
             raise SSHException('no moduli available')

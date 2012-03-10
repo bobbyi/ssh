@@ -37,7 +37,7 @@ from ssh.channel import Channel
 from ssh.common import io_sleep
 
 SSH2_AGENTC_REQUEST_IDENTITIES, SSH2_AGENT_IDENTITIES_ANSWER, \
-    SSH2_AGENTC_SIGN_REQUEST, SSH2_AGENT_SIGN_RESPONSE = range(11, 15)
+    SSH2_AGENTC_SIGN_REQUEST, SSH2_AGENT_SIGN_RESPONSE = list(range(11, 15))
 
 class AgentSSH(object):
     """
@@ -82,7 +82,7 @@ class AgentSSH(object):
         self._keys = ()
 
     def _send_message(self, msg):
-        msg = str(msg)
+        msg = bytes(msg)
         self._conn.send(struct.pack('>I', len(msg)) + msg)
         l = self._read_all(4)
         msg = Message(self._read_all(struct.unpack('>I', l)[0]))
@@ -206,7 +206,7 @@ class AgentClientProxy(object):
                 # probably a dangling env var: the ssh agent is gone
                 return
         elif sys.platform == 'win32':
-            import win_pageant
+            from . import win_pageant
             if win_pageant.can_talk_to_agent():
                 conn = win_pageant.PageantConnection()
             else:
@@ -312,7 +312,7 @@ class Agent(AgentSSH):
                 # probably a dangling env var: the ssh agent is gone
                 return
         elif sys.platform == 'win32':
-            import win_pageant
+            from . import win_pageant
             if win_pageant.can_talk_to_agent():
                 conn = win_pageant.PageantConnection()
             else:
@@ -339,6 +339,9 @@ class AgentKey(PKey):
         self.agent = agent
         self.blob = blob
         self.name = Message(blob).get_string()
+
+    def __bytes__(self):
+        return self.blob
 
     def __str__(self):
         return self.blob

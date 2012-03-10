@@ -32,12 +32,12 @@ from ssh.ssh_exception import SSHException
 
 
 _MSG_KEXDH_GEX_REQUEST_OLD, _MSG_KEXDH_GEX_GROUP, _MSG_KEXDH_GEX_INIT, \
-    _MSG_KEXDH_GEX_REPLY, _MSG_KEXDH_GEX_REQUEST = range(30, 35)
+    _MSG_KEXDH_GEX_REPLY, _MSG_KEXDH_GEX_REQUEST = list(range(30, 35))
 
 
 class KexGex (object):
 
-    name = 'diffie-hellman-group-exchange-sha1'
+    name = b'diffie-hellman-group-exchange-sha1'
     min_bits = 1024
     max_bits = 8192
     preferred_bits = 2048
@@ -62,11 +62,11 @@ class KexGex (object):
         m = Message()
         if _test_old_style:
             # only used for unit tests: we shouldn't ever send this
-            m.add_byte(chr(_MSG_KEXDH_GEX_REQUEST_OLD))
+            m.add_byte(chr(_MSG_KEXDH_GEX_REQUEST_OLD).encode('latin-1'))
             m.add_int(self.preferred_bits)
             self.old_style = True
         else:
-            m.add_byte(chr(_MSG_KEXDH_GEX_REQUEST))
+            m.add_byte(chr(_MSG_KEXDH_GEX_REQUEST).encode('latin-1'))
             m.add_int(self.min_bits)
             m.add_int(self.preferred_bits)
             m.add_int(self.max_bits)
@@ -94,7 +94,7 @@ class KexGex (object):
         # generate an "x" (1 < x < (p-1)/2).
         q = (self.p - 1) // 2
         qnorm = util.deflate_long(q, 0)
-        qhbyte = ord(qnorm[0])
+        qhbyte = ord(qnorm[0:1])
         bytes = len(qnorm)
         qmask = 0xff
         while not (qhbyte & 0x80):
@@ -102,7 +102,7 @@ class KexGex (object):
             qmask >>= 1
         while True:
             x_bytes = self.transport.rng.read(bytes)
-            x_bytes = chr(ord(x_bytes[0]) & qmask) + x_bytes[1:]
+            x_bytes = chr(ord(x_bytes[0:1]) & qmask).encode('latin-1') + x_bytes[1:]
             x = util.inflate_long(x_bytes, 1)
             if (x > 1) and (x < q):
                 break
@@ -131,11 +131,11 @@ class KexGex (object):
         # generate prime
         pack = self.transport._get_modulus_pack()
         if pack is None:
-            raise SSHException('Can\'t do server-side gex with no modulus pack')
+            raise SSHException("Can't do server-side gex with no modulus pack")
         self.transport._log(DEBUG, 'Picking p (%d <= %d <= %d bits)' % (minbits, preferredbits, maxbits))
         self.g, self.p = pack.get_modulus(minbits, preferredbits, maxbits)
         m = Message()
-        m.add_byte(chr(_MSG_KEXDH_GEX_GROUP))
+        m.add_byte(chr(_MSG_KEXDH_GEX_GROUP).encode('latin-1'))
         m.add_mpint(self.p)
         m.add_mpint(self.g)
         self.transport._send_message(m)
@@ -152,11 +152,11 @@ class KexGex (object):
         # generate prime
         pack = self.transport._get_modulus_pack()
         if pack is None:
-            raise SSHException('Can\'t do server-side gex with no modulus pack')
+            raise SSHException("Can't do server-side gex with no modulus pack")
         self.transport._log(DEBUG, 'Picking p (~ %d bits)' % (self.preferred_bits,))
         self.g, self.p = pack.get_modulus(self.min_bits, self.preferred_bits, self.max_bits)
         m = Message()
-        m.add_byte(chr(_MSG_KEXDH_GEX_GROUP))
+        m.add_byte(chr(_MSG_KEXDH_GEX_GROUP).encode('latin-1'))
         m.add_mpint(self.p)
         m.add_mpint(self.g)
         self.transport._send_message(m)
@@ -169,13 +169,13 @@ class KexGex (object):
         # reject if p's bit length < 1024 or > 8192
         bitlen = util.bit_length(self.p)
         if (bitlen < 1024) or (bitlen > 8192):
-            raise SSHException('Server-generated gex p (don\'t ask) is out of range (%d bits)' % bitlen)
+            raise SSHException("Server-generated gex p (don't ask) is out of range (%d bits)" % bitlen)
         self.transport._log(DEBUG, 'Got server p (%d bits)' % bitlen)
         self._generate_x()
         # now compute e = g^x mod p
         self.e = pow(self.g, self.x, self.p)
         m = Message()
-        m.add_byte(chr(_MSG_KEXDH_GEX_INIT))
+        m.add_byte(chr(_MSG_KEXDH_GEX_INIT).encode('latin-1'))
         m.add_mpint(self.e)
         self.transport._send_message(m)
         self.transport._expect_packet(_MSG_KEXDH_GEX_REPLY)
@@ -187,7 +187,7 @@ class KexGex (object):
         self._generate_x()
         self.f = pow(self.g, self.x, self.p)
         K = pow(self.e, self.x, self.p)
-        key = str(self.transport.get_server_key())
+        key = bytes(self.transport.get_server_key())
         # okay, build up the hash H of (V_C || V_S || I_C || I_S || K_S || min || n || max || p || g || e || f || K)
         hm = Message()
         hm.add(self.transport.remote_version, self.transport.local_version,
@@ -203,16 +203,16 @@ class KexGex (object):
         hm.add_mpint(self.e)
         hm.add_mpint(self.f)
         hm.add_mpint(K)
-        H = SHA.new(str(hm)).digest()
+        H = SHA.new(bytes(hm)).digest()
         self.transport._set_K_H(K, H)
         # sign it
         sig = self.transport.get_server_key().sign_ssh_data(self.transport.rng, H)
         # send reply
         m = Message()
-        m.add_byte(chr(_MSG_KEXDH_GEX_REPLY))
+        m.add_byte(chr(_MSG_KEXDH_GEX_REPLY).encode('latin-1'))
         m.add_string(key)
         m.add_mpint(self.f)
-        m.add_string(str(sig))
+        m.add_string(bytes(sig))
         self.transport._send_message(m)
         self.transport._activate_outbound()
         
@@ -238,6 +238,6 @@ class KexGex (object):
         hm.add_mpint(self.e)
         hm.add_mpint(self.f)
         hm.add_mpint(K)
-        self.transport._set_K_H(K, SHA.new(str(hm)).digest())
+        self.transport._set_K_H(K, SHA.new(bytes(hm)).digest())
         self.transport._verify_key(host_key, sig)
         self.transport._activate_outbound()

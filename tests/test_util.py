@@ -21,14 +21,14 @@ Some unit tests for utility functions.
 """
 
 from binascii import hexlify
-import cStringIO
+import io
 import os
 import unittest
 from Crypto.Hash import SHA
 import ssh.util
 
 
-test_config_file = """\
+test_config_file = b"""\
 Host *
     User robey
     IdentityFile    =~/.ssh/id_rsa
@@ -43,7 +43,7 @@ Host spoo.example.com
 Crazy something else
 """
 
-test_hosts_file = """\
+test_hosts_file = b"""\
 secure.example.com ssh-rsa AAAAB3NzaC1yc2EAAAABIwAAAIEA1PD6U2/TVxET6lkpKhOk5r\
 9q/kAYG6sP9f5zuUYP8i7FOFp/6ncCEbbtg/lB+A3iidyxoSWl+9jtoyyDOOVX4UIDV9G11Ml8om3\
 D+jrpI9cycZHqilK0HmxDeCuxbwyMuaCygU9gS2qoRvNLWZk70OpIKSSpBo0Wl3/XUmz9uhc=
@@ -59,9 +59,6 @@ from ssh import *
 
 class UtilTest (unittest.TestCase):
 
-    assertTrue = unittest.TestCase.failUnless   # for Python 2.3 and below
-    assertFalse = unittest.TestCase.failIf      # for Python 2.3 and below
-
     def setUp(self):
         pass
 
@@ -72,7 +69,7 @@ class UtilTest (unittest.TestCase):
         """
         verify that all the classes can be imported from ssh.
         """
-        symbols = globals().keys()
+        symbols = list(globals().keys())
         self.assertTrue('Transport' in symbols)
         self.assertTrue('SSHClient' in symbols)
         self.assertTrue('MissingHostKeyPolicy' in symbols)
@@ -108,41 +105,40 @@ class UtilTest (unittest.TestCase):
 
     def test_2_parse_config(self):
         global test_config_file
-        f = cStringIO.StringIO(test_config_file)
+        f = io.BytesIO(test_config_file)
         config = ssh.util.parse_ssh_config(f)
         self.assertEquals(config._config,
-                          [ {'identityfile': '~/.ssh/id_rsa', 'host': '*', 'user': 'robey',
-                             'crazy': 'something dumb  '},
-                            {'host': '*.example.com', 'user': 'bjork', 'port': '3333'},
-                            {'host': 'spoo.example.com', 'crazy': 'something else'}])
+                          [ {b'identityfile': b'~/.ssh/id_rsa', b'host': b'*', b'user': b'robey',
+                             b'crazy': b'something dumb  '},
+                            {b'host': b'*.example.com', b'user': b'bjork', b'port': b'3333'},
+                            {b'host': b'spoo.example.com', b'crazy': b'something else'}])
 
     def test_3_host_config(self):
         global test_config_file
-        f = cStringIO.StringIO(test_config_file)
+        f = io.BytesIO(test_config_file)
         config = ssh.util.parse_ssh_config(f)
-        c = ssh.util.lookup_ssh_host_config('irc.danger.com', config)
-        self.assertEquals(c, {'identityfile': '~/.ssh/id_rsa', 'user': 'robey', 'crazy': 'something dumb  '})
-        c = ssh.util.lookup_ssh_host_config('irc.example.com', config)
-        self.assertEquals(c, {'identityfile': '~/.ssh/id_rsa', 'user': 'bjork', 'crazy': 'something dumb  ', 'port': '3333'})
-        c = ssh.util.lookup_ssh_host_config('spoo.example.com', config)
-        self.assertEquals(c, {'identityfile': '~/.ssh/id_rsa', 'user': 'bjork', 'crazy': 'something else', 'port': '3333'})
+        c = ssh.util.lookup_ssh_host_config(b'irc.danger.com', config)
+        self.assertEquals(c, {b'identityfile': b'~/.ssh/id_rsa', b'user': b'robey', b'crazy': b'something dumb  '})
+        c = ssh.util.lookup_ssh_host_config(b'irc.example.com', config)
+        self.assertEquals(c, {b'identityfile': b'~/.ssh/id_rsa', b'user': b'bjork', b'crazy': b'something dumb  ', b'port': b'3333'})
+        c = ssh.util.lookup_ssh_host_config(b'spoo.example.com', config)
+        self.assertEquals(c, {b'identityfile': b'~/.ssh/id_rsa', b'user': b'bjork', b'crazy': b'something else', b'port': b'3333'})
 
     def test_4_generate_key_bytes(self):
-        x = ssh.util.generate_key_bytes(SHA, 'ABCDEFGH', 'This is my secret passphrase.', 64)
-        hex = ''.join(['%02x' % ord(c) for c in x])
+        x = ssh.util.generate_key_bytes(SHA, b'ABCDEFGH', b'This is my secret passphrase.', 64)
+        hex = ''.join(['%02x' % ord(x[i:i+1]) for i in range(len(x))])
         self.assertEquals(hex, '9110e2f6793b69363e58173e9436b13a5a4b339005741d5c680e505f57d871347b4239f14fb5c46e857d5e100424873ba849ac699cea98d729e57b3e84378e8b')
 
     def test_5_host_keys(self):
-        f = open('hostfile.temp', 'w')
-        f.write(test_hosts_file)
-        f.close()
+        with open('hostfile.temp', 'wb') as f:
+            f.write(test_hosts_file)
         try:
             hostdict = ssh.util.load_host_keys('hostfile.temp')
             self.assertEquals(2, len(hostdict))
-            self.assertEquals(1, len(hostdict.values()[0]))
-            self.assertEquals(1, len(hostdict.values()[1]))
-            fp = hexlify(hostdict['secure.example.com']['ssh-rsa'].get_fingerprint()).upper()
-            self.assertEquals('E6684DB30E109B67B70FF1DC5C7F1363', fp)
+            self.assertEquals(1, len(list(hostdict.values())[0]))
+            self.assertEquals(1, len(list(hostdict.values())[1]))
+            fp = hexlify(hostdict[b'secure.example.com'][b'ssh-rsa'].get_fingerprint()).upper()
+            self.assertEquals(b'E6684DB30E109B67B70FF1DC5C7F1363', fp)
         finally:
             os.unlink('hostfile.temp')
 

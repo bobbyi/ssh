@@ -22,14 +22,14 @@ L{HostKeys}
 
 import base64
 from Crypto.Hash import SHA, HMAC
-import UserDict
+from collections import MutableMapping
 
 from ssh.common import *
 from ssh.dsskey import DSSKey
 from ssh.rsakey import RSAKey
 
 
-class HostKeyEntry:
+class HostKeyEntry(object):
     """
     Representation of a line in an OpenSSH-style "known hosts" file.
     """
@@ -39,6 +39,7 @@ class HostKeyEntry:
         self.hostnames = hostnames
         self.key = key
 
+    @classmethod
     def from_line(cls, line):
         """
         Parses the given line of text to find the names for the host,
@@ -52,26 +53,25 @@ class HostKeyEntry:
         @param line: a line from an OpenSSH known_hosts file
         @type line: str
         """
-        fields = line.split(' ')
+        fields = line.split(b' ')
         if len(fields) < 3:
             # Bad number of fields
             return None
         fields = fields[:3]
 
         names, keytype, key = fields
-        names = names.split(',')
+        names = names.split(b',')
 
         # Decide what kind of key we're looking at and create an object
         # to hold it accordingly.
-        if keytype == 'ssh-rsa':
+        if keytype == b'ssh-rsa':
             key = RSAKey(data=base64.decodestring(key))
-        elif keytype == 'ssh-dss':
+        elif keytype == b'ssh-dss':
             key = DSSKey(data=base64.decodestring(key))
         else:
             return None
 
         return cls(names, key)
-    from_line = classmethod(from_line)
 
     def to_line(self):
         """
@@ -80,15 +80,17 @@ class HostKeyEntry:
         included.
         """
         if self.valid:
-            return '%s %s %s\n' % (','.join(self.hostnames), self.key.get_name(),
-                   self.key.get_base64())
+            hostnames = b','.join(self.hostnames)
+            line = b' '.join((hostnames, self.key.get_name(),
+                              self.key.get_base64()))
+            return line + b'\n'
         return None
 
     def __repr__(self):
         return '<HostKeyEntry %r: %r>' % (self.hostnames, self.key)
 
 
-class HostKeys (UserDict.DictMixin):
+class HostKeys(MutableMapping):
     """
     Representation of an openssh-style "known hosts" file.  Host keys can be
     read from one or more files, and then individual hosts can be looked up to
@@ -147,10 +149,10 @@ class HostKeys (UserDict.DictMixin):
 
         @raise IOError: if there was an error reading the file
         """
-        f = open(filename, 'r')
+        f = open(filename, 'rb')
         for line in f:
             line = line.strip()
-            if (len(line) == 0) or (line[0] == '#'):
+            if (len(line) == 0) or (line[0:1] == b'#'):
                 continue
             e = HostKeyEntry.from_line(line)
             if e is not None:
@@ -171,7 +173,7 @@ class HostKeys (UserDict.DictMixin):
 
         @since: 1.6.1
         """
-        f = open(filename, 'w')
+        f = open(filename, 'wb')
         for e in self._entries:
             line = e.to_line()
             if line:
@@ -189,7 +191,7 @@ class HostKeys (UserDict.DictMixin):
         @return: keys associated with this host (or C{None})
         @rtype: dict(str, L{PKey})
         """
-        class SubDict (UserDict.DictMixin):
+        class SubDict (MutableMapping):
             def __init__(self, hostname, entries, hostkeys):
                 self._hostname = hostname
                 self._entries = entries
@@ -218,10 +220,19 @@ class HostKeys (UserDict.DictMixin):
             def keys(self):
                 return [e.key.get_name() for e in self._entries if e.key is not None]
 
+            def __iter__(self):
+                return iter(self.keys())
+
+            def __len__(self):
+                return len(self.keys())
+
+            def __delitem__(self):
+                raise NotImplemented
+
         entries = []
         for e in self._entries:
             for h in e.hostnames:
-                if (h.startswith('|1|') and (self.hash_host(hostname, h) == h)) or (h == hostname):
+                if (h.startswith(b'|1|') and (self.hash_host(hostname, h) == h)) or (h == hostname):
                     entries.append(e)
         if len(entries) == 0:
             return None
@@ -246,7 +257,7 @@ class HostKeys (UserDict.DictMixin):
         host_key = k.get(key.get_name(), None)
         if host_key is None:
             return False
-        return str(host_key) == str(key)
+        return bytes(host_key) == bytes(key)
 
     def clear(self):
         """
@@ -265,7 +276,7 @@ class HostKeys (UserDict.DictMixin):
         if len(entry) == 0:
             self._entries.append(HostKeyEntry([hostname], None))
             return
-        for key_type in entry.keys():
+        for key_type in list(entry.keys()):
             found = False
             for e in self._entries:
                 if (hostname in e.hostnames) and (e.key.get_name() == key_type):
@@ -275,8 +286,16 @@ class HostKeys (UserDict.DictMixin):
             if not found:
                 self._entries.append(HostKeyEntry([hostname], entry[key_type]))
 
+    def __len__(self):
+        return len(self.keys())
+
+    def __iter__(self):
+        return iter(self.keys())
+
+    def __delitem__(self):
+        raise NotImplemented
+
     def keys(self):
-        # python 2.4 sets would be nice here.
         ret = []
         for e in self._entries:
             for h in e.hostnames:
@@ -290,6 +309,7 @@ class HostKeys (UserDict.DictMixin):
             ret.append(self.lookup(k))
         return ret
 
+    @staticmethod
     def hash_host(hostname, salt=None):
         """
         Return a "hashed" form of the hostname, as used by openssh when storing
@@ -305,12 +325,10 @@ class HostKeys (UserDict.DictMixin):
         if salt is None:
             salt = rng.read(SHA.digest_size)
         else:
-            if salt.startswith('|1|'):
-                salt = salt.split('|')[2]
+            if salt.startswith(b'|1|'):
+                salt = salt.split(b'|')[2]
             salt = base64.decodestring(salt)
         assert len(salt) == SHA.digest_size
         hmac = HMAC.HMAC(salt, hostname, SHA).digest()
-        hostkey = '|1|%s|%s' % (base64.encodestring(salt), base64.encodestring(hmac))
-        return hostkey.replace('\n', '')
-    hash_host = staticmethod(hash_host)
-
+        hostkey = b'|'.join((b'', b'1', base64.encodestring(salt), base64.encodestring(hmac)))
+        return hostkey.replace(b'\n', b'')

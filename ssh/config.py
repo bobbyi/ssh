@@ -38,7 +38,7 @@ class SSHConfig (object):
         """
         Create a new OpenSSH config object.
         """
-        self._config = [ { 'host': '*' } ]
+        self._config = [ { b'host': b'*' } ]
 
     def parse(self, file_obj):
         """
@@ -49,32 +49,32 @@ class SSHConfig (object):
         """
         configs = [self._config[0]]
         for line in file_obj:
-            line = line.rstrip('\n').lstrip()
-            if (line == '') or (line[0] == '#'):
+            line = line.rstrip(b'\n').lstrip()
+            if (line == b'') or (line[0:1] == b'#'):
                 continue
-            if '=' in line:
-                key, value = line.split('=', 1)
+            if b'=' in line:
+                key, value = line.split(b'=', 1)
                 key = key.strip().lower()
             else:
                 # find first whitespace, and split there
                 i = 0
-                while (i < len(line)) and not line[i].isspace():
+                while (i < len(line)) and not line[i:i+1].isspace():
                     i += 1
                 if i == len(line):
                     raise Exception('Unparsable line: %r' % line)
                 key = line[:i].lower()
                 value = line[i:].lstrip()
 
-            if key == 'host':
+            if key == b'host':
                 del configs[:]
                 # the value may be multiple hosts, space-delimited
                 for host in value.split():
                     # do we have a pre-existing host config to append to?
-                    matches = [c for c in self._config if c['host'] == host]
+                    matches = [c for c in self._config if c[b'host'] == host]
                     if len(matches) > 0:
                         configs.append(matches[0])
                     else:
-                        config = { 'host': host }
+                        config = { b'host': host }
                         self._config.append(config)
                         configs.append(config)
             else:
@@ -100,11 +100,11 @@ class SSHConfig (object):
         @param hostname: the hostname to lookup
         @type hostname: str
         """
-        matches = [x for x in self._config if fnmatch.fnmatch(hostname, x['host'])]
+        matches = [x for x in self._config if fnmatch.fnmatch(hostname, x[b'host'])]
         # sort in order of shortest match (usually '*') to longest
-        matches.sort(lambda x,y: cmp(len(x['host']), len(y['host'])))
+        matches.sort(key = lambda x : len(x[b'host']))
         ret = {}
         for m in matches:
             ret.update(m)
-        del ret['host']
+        del ret[b'host']
         return ret
