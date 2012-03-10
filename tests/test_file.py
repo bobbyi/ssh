@@ -28,10 +28,10 @@ class LoopbackFile (BufferedFile):
     """
     BufferedFile object that you can write data into, and then read it back.
     """
-    def __init__(self, mode='r', bufsize=-1):
+    def __init__(self, mode='rb', bufsize=-1):
         BufferedFile.__init__(self)
         self._set_mode(mode, bufsize)
-        self.buffer = ''
+        self.buffer = b''
 
     def _read(self, size):
         if len(self.buffer) == 0:
@@ -50,15 +50,15 @@ class LoopbackFile (BufferedFile):
 class BufferedFileTest (unittest.TestCase):
 
     def test_1_simple(self):
-        f = LoopbackFile('r')
+        f = LoopbackFile('rb')
         try:
-            f.write('hi')
+            f.write(b'hi')
             self.assert_(False, 'no exception on write to read-only file')
         except:
             pass
         f.close()
 
-        f = LoopbackFile('w')
+        f = LoopbackFile('wb')
         try:
             f.read(1)
             self.assert_(False, 'no exception to read from write-only file')
@@ -115,27 +115,27 @@ class BufferedFileTest (unittest.TestCase):
         """
         verify that flush will force a write.
         """
-        f = LoopbackFile('r+', 512)
-        f.write('Not\nquite\n512 bytes.\n')
-        self.assertEqual(f.read(1), '')
+        f = LoopbackFile('rb+', 512)
+        f.write(b'Not\nquite\n512 bytes.\n')
+        self.assertEqual(f.read(1), b'')
         f.flush()
-        self.assertEqual(f.read(5), 'Not\nq')
-        self.assertEqual(f.read(10), 'uite\n512 b')
-        self.assertEqual(f.read(9), 'ytes.\n')
-        self.assertEqual(f.read(3), '')
+        self.assertEqual(f.read(5), b'Not\nq')
+        self.assertEqual(f.read(10), b'uite\n512 b')
+        self.assertEqual(f.read(9), b'ytes.\n')
+        self.assertEqual(f.read(3), b'')
         f.close()
 
     def test_6_buffering(self):
         """
         verify that flushing happens automatically on buffer crossing.
         """
-        f = LoopbackFile('r+', 16)
-        f.write('Too small.')
-        self.assertEqual(f.read(4), '')
-        f.write('  ')
-        self.assertEqual(f.read(4), '')
-        f.write('Enough.')
-        self.assertEqual(f.read(20), 'Too small.  Enough.')
+        f = LoopbackFile('rb+', 16)
+        f.write(b'Too small.')
+        self.assertEqual(f.read(4), b'')
+        f.write(b'  ')
+        self.assertEqual(f.read(4), b'')
+        f.write(b'Enough.')
+        self.assertEqual(f.read(20), b'Too small.  Enough.')
         f.close()
 
     def test_7_read_all(self):
@@ -146,6 +146,6 @@ class BufferedFileTest (unittest.TestCase):
         f.write('The first thing you need to do is open your eyes. ')
         f.write('Then, you need to close them again.\n')
         s = f.read(-1)
-        self.assertEqual(s, 'The first thing you need to do is open your eyes. Then, you ' +
-                         'need to close them again.\n')
+        self.assertEqual(s, 'The first thing you need to do is open your eyes. Then, you '
+                        'need to close them again.\n')
         f.close()

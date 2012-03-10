@@ -64,7 +64,7 @@ class NullServer (ServerInterface):
             if self.paranoid_did_public_key:
                 return AUTH_SUCCESSFUL
             return AUTH_PARTIALLY_SUCCESSFUL
-        if (username == 'utf8') and (password == u'\u2022'):
+        if (username == 'utf8') and (password == '\u2022'):
             return AUTH_SUCCESSFUL
         if (username == 'non-utf8') and (password == '\xff'):
             return AUTH_SUCCESSFUL
@@ -111,7 +111,7 @@ class AuthTest (unittest.TestCase):
     
     def start_server(self):
         host_key = RSAKey.from_private_key_file('tests/test_rsa.key')
-        self.public_host_key = RSAKey(data=str(host_key))
+        self.public_host_key = RSAKey(data=bytes(host_key))
         self.ts.add_server_key(host_key)
         self.event = threading.Event()
         self.server = NullServer()
@@ -202,7 +202,7 @@ class AuthTest (unittest.TestCase):
         """
         self.start_server()
         self.tc.connect(hostkey=self.public_host_key)
-        remain = self.tc.auth_password('utf8', u'\u2022')
+        remain = self.tc.auth_password('utf8', '\u2022')
         self.assertEquals([], remain)
         self.verify_finished()
 

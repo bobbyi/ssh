@@ -79,6 +79,7 @@ def get_sftp():
 
 class SFTPTest (unittest.TestCase):
 
+    @staticmethod
     def init(hostname, username, keyfile, passwd):
         global sftp, tc
 
@@ -110,8 +111,8 @@ class SFTPTest (unittest.TestCase):
             sys.stderr.write('\n')
             sys.exit(1)
         sftp = ssh.SFTP.from_transport(t)
-    init = staticmethod(init)
 
+    @staticmethod
     def init_loopback():
         global sftp, tc
 
@@ -131,16 +132,15 @@ class SFTPTest (unittest.TestCase):
         event.wait(1.0)
 
         sftp = ssh.SFTP.from_transport(tc)
-    init_loopback = staticmethod(init_loopback)
 
+    @staticmethod
     def set_big_file_test(onoff):
         global g_big_file_test
         g_big_file_test = onoff
-    set_big_file_test = staticmethod(set_big_file_test)
 
     def setUp(self):
         global FOLDER
-        for i in xrange(1000):
+        for i in range(1000):
             FOLDER = FOLDER[:-3] + '%03d' % i
             try:
                 sftp.mkdir(FOLDER)
@@ -289,16 +289,16 @@ class SFTPTest (unittest.TestCase):
             f.close()
 
             stat = sftp.stat(FOLDER + '/special')
-            sftp.chmod(FOLDER + '/special', (stat.st_mode & ~0777) | 0600)
+            sftp.chmod(FOLDER + '/special', (stat.st_mode & ~0o777) | 0o600)
             stat = sftp.stat(FOLDER + '/special')
-            expected_mode = 0600
+            expected_mode = 0o600
             if sys.platform == 'win32':
                 # chmod not really functional on windows
-                expected_mode = 0666
+                expected_mode = 0o666
             if sys.platform == 'cygwin':
                 # even worse.
-                expected_mode = 0644
-            self.assertEqual(stat.st_mode & 0777, expected_mode)
+                expected_mode = 0o644
+            self.assertEqual(stat.st_mode & 0o777, expected_mode)
             self.assertEqual(stat.st_size, 1024)
 
             mtime = stat.st_mtime - 3600
@@ -329,17 +329,17 @@ class SFTPTest (unittest.TestCase):
 
             f = sftp.open(FOLDER + '/special', 'r+')
             stat = f.stat()
-            f.chmod((stat.st_mode & ~0777) | 0600)
+            f.chmod((stat.st_mode & ~0o777) | 0o600)
             stat = f.stat()
 
-            expected_mode = 0600
+            expected_mode = 0o600
             if sys.platform == 'win32':
                 # chmod not really functional on windows
-                expected_mode = 0666
+                expected_mode = 0o666
             if sys.platform == 'cygwin':
                 # even worse.
-                expected_mode = 0644
-            self.assertEqual(stat.st_mode & 0777, expected_mode)
+                expected_mode = 0o644
+            self.assertEqual(stat.st_mode & 0o777, expected_mode)
             self.assertEqual(stat.st_size, 1024)
 
             mtime = stat.st_mtime - 3600
@@ -618,7 +618,7 @@ class SFTPTest (unittest.TestCase):
             try:
                 f = sftp.open(FOLDER + '/unusual.txt', 'wx')
                 self.fail('expected exception')
-            except IOError, x:
+            except IOError as x:
                 pass
         finally:
             sftp.unlink(FOLDER + '/unusual.txt')
@@ -632,23 +632,23 @@ class SFTPTest (unittest.TestCase):
         f.close()
 
         try:
-            sftp.rename(FOLDER + '/something', FOLDER + u'/\u00fcnic\u00f8de')
+            sftp.rename(FOLDER + '/something', FOLDER + '/\u00fcnic\u00f8de')
             sftp.open(FOLDER + '/\xc3\xbcnic\xc3\xb8\x64\x65', 'r')
-        except Exception, e:
+        except Exception as e:
             self.fail('exception ' + e)
         sftp.unlink(FOLDER + '/\xc3\xbcnic\xc3\xb8\x64\x65')
 
     def test_L_utf8_chdir(self):
-        sftp.mkdir(FOLDER + u'\u00fcnic\u00f8de')
+        sftp.mkdir(FOLDER + '\u00fcnic\u00f8de')
         try:
-            sftp.chdir(FOLDER + u'\u00fcnic\u00f8de')
+            sftp.chdir(FOLDER + '\u00fcnic\u00f8de')
             f = sftp.open('something', 'w')
             f.write('okay')
             f.close()
             sftp.unlink('something')
         finally:
             sftp.chdir(None)
-            sftp.rmdir(FOLDER + u'\u00fcnic\u00f8de')
+            sftp.rmdir(FOLDER + '\u00fcnic\u00f8de')
 
     def test_M_bad_readv(self):
         """

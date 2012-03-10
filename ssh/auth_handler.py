@@ -147,11 +147,11 @@ class AuthHandler (object):
         m.add_byte(chr(MSG_USERAUTH_REQUEST))
         m.add_string(username)
         m.add_string(service)
-        m.add_string('publickey')
+        m.add_string(b'publickey')
         m.add_boolean(1)
         m.add_string(key.get_name())
-        m.add_string(str(key))
-        return str(m)
+        m.add_string(bytes(key))
+        return bytes(m)
 
     def wait_for_response(self, event):
         while True:
@@ -188,7 +188,7 @@ class AuthHandler (object):
 
     def _parse_service_accept(self, m):
         service = m.get_string()
-        if service == 'ssh-userauth':
+        if service == b'ssh-userauth':
             self.transport._log(DEBUG, 'userauth is OK')
             m = Message()
             m.add_byte(chr(MSG_USERAUTH_REQUEST))
@@ -198,18 +198,18 @@ class AuthHandler (object):
             if self.auth_method == 'password':
                 m.add_boolean(False)
                 password = self.password
-                if isinstance(password, unicode):
+                if isinstance(password, str):
                     password = password.encode('UTF-8')
                 m.add_string(password)
             elif self.auth_method == 'publickey':
                 m.add_boolean(True)
                 m.add_string(self.private_key.get_name())
-                m.add_string(str(self.private_key))
+                m.add_string(bytes(self.private_key))
                 blob = self._get_session_blob(self.private_key, 'ssh-connection', self.username)
                 sig = self.private_key.sign_ssh_data(self.transport.rng, blob)
                 m.add_string(str(sig))
             elif self.auth_method == 'keyboard-interactive':
-                m.add_string('')
+                m.add_string(b'')
                 m.add_string(self.submethods)
             elif self.auth_method == 'none':
                 pass
@@ -308,7 +308,7 @@ class AuthHandler (object):
             keyblob = m.get_string()
             try:
                 key = self.transport._key_info[keytype](Message(keyblob))
-            except SSHException, e:
+            except SSHException as e:
                 self.transport._log(INFO, 'Auth rejected: public key: %s' % str(e))
                 key = None
             except:

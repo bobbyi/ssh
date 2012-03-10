@@ -20,10 +20,11 @@
 Useful functions used by the rest of ssh.
 """
 
-from __future__ import generators
+
 
 import array
 from binascii import hexlify, unhexlify
+import logging
 import sys
 import struct
 import traceback
@@ -32,74 +33,57 @@ import threading
 from ssh.common import *
 from ssh.config import SSHConfig
 
-
-# Change by RogerB - python < 2.3 doesn't have enumerate so we implement it
-if sys.version_info < (2,3):
-    class enumerate:
-        def __init__ (self, sequence):
-            self.sequence = sequence
-        def __iter__ (self):
-            count = 0
-            for item in self.sequence:
-                yield (count, item)
-                count += 1
-
+def _ord(byte):
+    if isinstance(byte, str):
+        return ord(byte)
+    else:
+        return byte
 
 def inflate_long(s, always_positive=False):
-    "turns a normalized byte string into a long-int (adapted from Crypto.Util.number)"
-    out = 0L
+    "turns a normalized byte string into an int (adapted from Crypto.Util.number)"
+    out = 0
     negative = 0
-    if not always_positive and (len(s) > 0) and (ord(s[0]) >= 0x80):
+    if not always_positive and (len(s) > 0) and (_ord(s[0]) >= 0x80):
         negative = 1
     if len(s) % 4:
-        filler = '\x00'
+        filler = b'\x00'
         if negative:
-            filler = '\xff'
+            filler = b'\xff'
         s = filler * (4 - len(s) % 4) + s
     for i in range(0, len(s), 4):
         out = (out << 32) + struct.unpack('>I', s[i:i+4])[0]
     if negative:
-        out -= (1L << (8 * len(s)))
+        out -= (1 << (8 * len(s)))
     return out
 
 def deflate_long(n, add_sign_padding=True):
-    "turns a long-int into a normalized byte string (adapted from Crypto.Util.number)"
+    "turns an int into a normalized byte string (adapted from Crypto.Util.number)"
     # after much testing, this algorithm was deemed to be the fastest
-    s = ''
-    n = long(n)
+    s = b''
+    n = int(n)
     while (n != 0) and (n != -1):
-        s = struct.pack('>I', n & 0xffffffffL) + s
+        s = struct.pack('>I', n & 0xffffffff) + s
         n = n >> 32
     # strip off leading zeros, FFs
     for i in enumerate(s):
-        if (n == 0) and (i[1] != '\000'):
+        if (n == 0) and (_ord(i[1]) != 0):
             break
-        if (n == -1) and (i[1] != '\xff'):
+        if (n == -1) and (_ord(i[1]) != 0xff):
             break
     else:
         # degenerate case, n was either 0 or -1
         i = (0,)
         if n == 0:
-            s = '\000'
+            s = b'\000'
         else:
-            s = '\xff'
+            s = b'\xff'
     s = s[i[0]:]
     if add_sign_padding:
-        if (n == 0) and (ord(s[0]) >= 0x80):
-            s = '\x00' + s
-        if (n == -1) and (ord(s[0]) < 0x80):
-            s = '\xff' + s
+        if (n == 0) and (_ord(s[0]) >= 0x80):
+            s = b'\x00' + s
+        if (n == -1) and (_ord(s[0]) < 0x80):
+            s = b'\xff' + s
     return s
-
-def format_binary_weird(data):
-    out = ''
-    for i in enumerate(data):
-        out += '%02X' % ord(i[1])
-        if i[0] % 2:
-            out += ' '
-        if i[0] % 16 == 15:
-            out += '\n'
-    return out
 
 def format_binary(data, prefix=''):
     x = 0
@@ -112,8 +96,8 @@ def format_binary(data, prefix=''):
     return [prefix + x for x in out]
 
 def format_binary_line(data):
-    left = ' '.join(['%02X' % ord(c) for c in data])
-    right = ''.join([('.%c..' % c)[(ord(c)+63)//95] for c in data])
+    left = ' '.join(['%02X' % _ord(c) for c in data])
+    right = ''.join([('.%c..' % c)[(_ord(c)+63)//95] for c in data])
     return '%-50s %s' % (left, right)
 
 def hexify(s):
@@ -125,17 +109,15 @@ def unhexify(s):
 def safe_string(s):
     out = ''
     for c in s:
-        if (ord(c) >= 32) and (ord(c) <= 127):
+        if (_ord(c) >= 32) and (_ord(c) <= 127):
             out += c
         else:
-            out += '%%%02X' % ord(c)
+            out += '%%%02X' % _ord(c)
     return out
-
-# ''.join([['%%%02X' % ord(c), c][(ord(c) >= 32) and (ord(c) <= 127)] for c in s])
 
 def bit_length(n):
     norm = deflate_long(n, 0)
-    hbyte = ord(norm[0])
+    hbyte = _ord(norm[0])
     if hbyte == 0:
         return 1
     bitlen = len(norm) * 8
@@ -165,8 +147,8 @@ def generate_key_bytes(hashclass, salt, key, nbytes):
     @return: key data
     @rtype: string
     """
-    keydata = ''
-    digest = ''
+    keydata = b''
+    digest = b''
     if len(salt) > 8:
         salt = salt[:8]
     while nbytes > 0:
@@ -273,30 +255,30 @@ def get_logger(name):
 
 class Counter (object):
     """Stateful counter for CTR mode crypto"""
-    def __init__(self, nbits, initial_value=1L, overflow=0L):
-        self.blocksize = nbits / 8
+    def __init__(self, nbits, initial_value=1, overflow=0):
+        self.blocksize = nbits // 8
         self.overflow = overflow
         # start with value - 1 so we don't have to store intermediate values when counting
         # could the iv be 0?
         if initial_value == 0:
-            self.value = array.array('c', '\xFF' * self.blocksize)
+            self.value = array.array('B', b'\xFF' * self.blocksize)
         else:
             x = deflate_long(initial_value - 1, add_sign_padding=False)
-            self.value = array.array('c', '\x00' * (self.blocksize - len(x)) + x)
+            self.value = array.array('B', b'\x00' * (self.blocksize - len(x)) + x)
 
     def __call__(self):
         """Increament the counter and return the new value"""
         i = self.blocksize - 1
         while i > -1:
-            c = self.value[i] = chr((ord(self.value[i]) + 1) % 256)
-            if c != '\x00':
+            c = self.value[i] = chr((_ord(self.value[i]) + 1) % 256)
+            if c != b'\x00':
                 return self.value.tostring()
             i -= 1
         # counter reset
         x = deflate_long(self.overflow, add_sign_padding=False)
-        self.value = array.array('c', '\x00' * (self.blocksize - len(x)) + x)
+        self.value = array.array('B', b'\x00' * (self.blocksize - len(x)) + x)
         return self.value.tostring()
 
-    def new(cls, nbits, initial_value=1L, overflow=0L):
+    @classmethod
+    def new(cls, nbits, initial_value=1, overflow=0):
         return cls(nbits, initial_value=initial_value, overflow=overflow)
-    new = classmethod(new)

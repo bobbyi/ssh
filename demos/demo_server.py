@@ -41,7 +41,7 @@ print 'Read key: ' + hexlify(host_key.get_fingerprint())
 class Server (ssh.ServerInterface):
     # 'data' is the output of base64.encodestring(str(key))
     # (using the "user_rsa_key" files)
-    data = 'AAAAB3NzaC1yc2EAAAABIwAAAIEAyO4it3fHlmGZWJaGrfeHOVY7RWO3P9M7hp' + \
+    data = b'AAAAB3NzaC1yc2EAAAABIwAAAIEAyO4it3fHlmGZWJaGrfeHOVY7RWO3P9M7hp' + \
            'fAu7jJ2d7eothvfeuoRFtJwhUmZDluRdFyhFY/hFAh76PJKGAusIqIQKlkJxMC' + \
            'KDqIexkgHAfID/6mqvmnSJf0b5W8v5h2pI/stOSwTQ+pxVhwJ9ctYDhRSlF0iT' + \
            'UWT10hcuO4Ks8='

@@ -21,7 +21,7 @@ Implementation of an SSH2 "message".
 """
 
 import struct
-import cStringIO
+import io
 
 from ssh import util
 
@@ -46,9 +46,18 @@ class Message (object):
         @type content: string
         """
         if content != None:
-            self.packet = cStringIO.StringIO(content)
+            self.packet = io.BytesIO(content)
         else:
-            self.packet = cStringIO.StringIO()
+            self.packet = io.BytesIO()
+
+    def __bytes__(self):
+        """
+        Return the byte stream content of this Message, as a string.
+
+        @return: the contents of this Message.
+        @rtype: string
+        """
+        return self.packet.getvalue()
 
     def __str__(self):
         """
@@ -57,7 +66,7 @@ class Message (object):
         @return: the contents of this Message.
         @rtype: string
         """
-        return self.packet.getvalue()
+        return self.__bytes__()
 
     def __repr__(self):
         """
@@ -111,7 +120,7 @@ class Message (object):
         """
         b = self.packet.read(n)
         if len(b) < n:
-            return b + '\x00' * (n - len(b))
+            return b + b'\x00' * (n - len(b))
         return b
 
     def get_byte(self):
@@ -133,7 +142,7 @@ class Message (object):
         @rtype: bool
         """
         b = self.get_bytes(1)
-        return b != '\x00'
+        return b != b'\x00'
 
     def get_int(self):
         """
@@ -164,7 +173,7 @@ class Message (object):
 
     def get_string(self):
         """
-        Fetch a string from the stream.  This could be a byte string and may
+        Fetch a string from the stream.  This is a byte string and may
         contain unprintable characters.  (It's not unheard of for a string to
         contain another byte-stream Message.)
 
@@ -181,7 +190,7 @@ class Message (object):
         @return: a list of strings.
         @rtype: list of strings
         """
-        return self.get_string().split(',')
+        return self.get_string().split(b',')
 
     def add_bytes(self, b):
         """
@@ -211,9 +220,9 @@ class Message (object):
         @type b: bool
         """
         if b:
-            self.add_byte('\x01')
+            self.add_byte(b'\x01')
         else:
-            self.add_byte('\x00')
+            self.add_byte(b'\x00')
         return self
             
     def add_int(self, n):
@@ -267,16 +276,17 @@ class Message (object):
         @param l: list of strings to add
         @type l: list(str)
         """
-        self.add_string(','.join(l))
+        self.add_string(b','.join(l))
         return self
         
     def _add(self, i):
-        if type(i) is str:
+        if type(i) is bytes:
             return self.add_string(i)
+        elif type(i) is str:
+            raise TypeError('Need bytes, not str %s' %i)
+            #return self.add_string(i.encode('ascii'))
         elif type(i) is int:
-            return self.add_int(i)
-        elif type(i) is long:
-            if i > 0xffffffffL:
+            if i > 0xffffffff:
                 return self.add_mpint(i)
             else:
                 return self.add_int(i)
@@ -285,7 +295,7 @@ class Message (object):
         elif type(i) is list:
             return self.add_list(i)
         else:
-            raise Exception('Unknown type')
+            raise TypeError('Unknown type')
 
     def add(self, *seq):
         """

@@ -38,7 +38,7 @@ from ssh.message import Message
 from loop import LoopSocket
 
 
-LONG_BANNER = """\
+LONG_BANNER = b"""\
 Welcome to the super-fun-land BBS, where our MOTD is the primary thing we
 provide. All rights reserved. Offer void in Tennessee. Stunt drivers were
 used. Do not attempt at home. Some restrictions apply.
@@ -107,9 +107,6 @@ class NullServer (ServerInterface):
 
 class TransportTest (unittest.TestCase):
 
-    assertTrue = unittest.TestCase.failUnless   # for Python 2.3 and below
-    assertFalse = unittest.TestCase.failIf      # for Python 2.3 and below
-
     def setUp(self):
         self.socks = LoopSocket()
         self.sockc = LoopSocket()
@@ -125,7 +122,7 @@ class TransportTest (unittest.TestCase):
 
     def setup_test_server(self, client_options=None, server_options=None):
         host_key = RSAKey.from_private_key_file('tests/test_rsa.key')
-        public_host_key = RSAKey(data=str(host_key))
+        public_host_key = RSAKey(data=bytes(host_key))
         self.ts.add_server_key(host_key)
         
         if client_options is not None:
@@ -146,11 +143,11 @@ class TransportTest (unittest.TestCase):
     def test_1_security_options(self):
         o = self.tc.get_security_options()
         self.assertEquals(type(o), SecurityOptions)
-        self.assert_(('aes256-cbc', 'blowfish-cbc') != o.ciphers)
-        o.ciphers = ('aes256-cbc', 'blowfish-cbc')
-        self.assertEquals(('aes256-cbc', 'blowfish-cbc'), o.ciphers)
+        self.assert_((b'aes256-cbc', b'blowfish-cbc') != o.ciphers)
+        o.ciphers = (b'aes256-cbc', b'blowfish-cbc')
+        self.assertEquals((b'aes256-cbc', b'blowfish-cbc'), o.ciphers)
         try:
-            o.ciphers = ('aes256-cbc', 'made-up-cipher')
+            o.ciphers = (b'aes256-cbc', b'made-up-cipher')
             self.assert_(False)
         except ValueError:
             pass
@@ -161,11 +158,11 @@ class TransportTest (unittest.TestCase):
             pass
             
     def test_2_compute_key(self):
-        self.tc.K = 123281095979686581523377256114209720774539068973101330872763622971399429481072519713536292772709507296759612401802191955568143056534122385270077606457721553469730659233569339356140085284052436697480759510519672848743794433460113118986816826624865291116513647975790797391795651716378444844877749505443714557929L
-        self.tc.H = unhexlify('0C8307CDE6856FF30BA93684EB0F04C2520E9ED3')
+        self.tc.K = 123281095979686581523377256114209720774539068973101330872763622971399429481072519713536292772709507296759612401802191955568143056534122385270077606457721553469730659233569339356140085284052436697480759510519672848743794433460113118986816826624865291116513647975790797391795651716378444844877749505443714557929
+        self.tc.H = unhexlify(b'0C8307CDE6856FF30BA93684EB0F04C2520E9ED3')
         self.tc.session_id = self.tc.H
         key = self.tc._compute_key('C', 32)
-        self.assertEquals('207E66594CA87C44ECCBA3B3CD39FDDB378E6FDB0F97C54B2AA0CFBF900CD995',
+        self.assertEquals(b'207E66594CA87C44ECCBA3B3CD39FDDB378E6FDB0F97C54B2AA0CFBF900CD995',
                           hexlify(key).upper())
 
     def test_3_simple(self):
@@ -175,7 +172,7 @@ class TransportTest (unittest.TestCase):
         later tests. :)
         """
         host_key = RSAKey.from_private_key_file('tests/test_rsa.key')
-        public_host_key = RSAKey(data=str(host_key))
+        public_host_key = RSAKey(data=bytes(host_key))
         self.ts.add_server_key(host_key)
         event = threading.Event()
         server = NullServer()
@@ -200,7 +197,7 @@ class TransportTest (unittest.TestCase):
         verify that a long banner doesn't mess up the handshake.
         """
         host_key = RSAKey.from_private_key_file('tests/test_rsa.key')
-        public_host_key = RSAKey(data=str(host_key))
+        public_host_key = RSAKey(data=bytes(host_key))
         self.ts.add_server_key(host_key)
         event = threading.Event()
         server = NullServer()
@@ -219,11 +216,11 @@ class TransportTest (unittest.TestCase):
         renegotiate keys in mid-stream.
         """
         def force_algorithms(options):
-            options.ciphers = ('aes256-cbc',)
-            options.digests = ('hmac-md5-96',)
+            options.ciphers = (b'aes256-cbc',)
+            options.digests = (b'hmac-md5-96',)
         self.setup_test_server(client_options=force_algorithms)
-        self.assertEquals('aes256-cbc', self.tc.local_cipher)
-        self.assertEquals('aes256-cbc', self.tc.remote_cipher)
+        self.assertEquals(b'aes256-cbc', self.tc.local_cipher)
+        self.assertEquals(b'aes256-cbc', self.tc.remote_cipher)
         self.assertEquals(12, self.tc.packetizer.get_mac_size_out())
         self.assertEquals(12, self.tc.packetizer.get_mac_size_in())
         
@@ -252,36 +249,36 @@ class TransportTest (unittest.TestCase):
         try:
             chan.exec_command('no')
             self.assert_(False)
-        except SSHException, x:
+        except SSHException as x:
             pass
         
         chan = self.tc.open_session()
         chan.exec_command('yes')
         schan = self.ts.accept(1.0)
-        schan.send('Hello there.\n')
-        schan.send_stderr('This is on stderr.\n')
+        schan.send(b'Hello there.\n')
+        schan.send_stderr(b'This is on stderr.\n')
         schan.close()
 
         f = chan.makefile()
-        self.assertEquals('Hello there.\n', f.readline())
-        self.assertEquals('', f.readline())
+        self.assertEquals(b'Hello there.\n', f.readline())
+        self.assertEquals(b'', f.readline())
         f = chan.makefile_stderr()
-        self.assertEquals('This is on stderr.\n', f.readline())
-        self.assertEquals('', f.readline())
+        self.assertEquals(b'This is on stderr.\n', f.readline())
+        self.assertEquals(b'', f.readline())
         
         # now try it with combined stdout/stderr
         chan = self.tc.open_session()
         chan.exec_command('yes')
         schan = self.ts.accept(1.0)
-        schan.send('Hello there.\n')
-        schan.send_stderr('This is on stderr.\n')
+        schan.send(b'Hello there.\n')
+        schan.send_stderr(b'This is on stderr.\n')
         schan.close()
 
         chan.set_combine_stderr(True)        
         f = chan.makefile()
-        self.assertEquals('Hello there.\n', f.readline())
-        self.assertEquals('This is on stderr.\n', f.readline())
-        self.assertEquals('', f.readline())
+        self.assertEquals(b'Hello there.\n', f.readline())
+        self.assertEquals(b'This is on stderr.\n', f.readline())
+        self.assertEquals(b'', f.readline())
 
     def test_7_invoke_shell(self):
         """
@@ -305,7 +302,7 @@ class TransportTest (unittest.TestCase):
         try:
             chan = self.tc.open_channel('bogus')
             self.fail('expected exception')
-        except ChannelException, x:
+        except ChannelException as x:
             self.assert_(x.code == OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED)
 
     def test_9_exit_status(self):
@@ -408,7 +405,7 @@ class TransportTest (unittest.TestCase):
         chan.close()
         
         # allow a few seconds for the rekeying to complete
-        for i in xrange(50):
+        for i in range(50):
             if self.tc.H != self.tc.session_id:
                 break
             time.sleep(0.1)
@@ -421,14 +418,14 @@ class TransportTest (unittest.TestCase):
         verify that zlib compression is basically working.
         """
         def force_compression(o):
-            o.compression = ('zlib',)
+            o.compression = (b'zlib',)
         self.setup_test_server(force_compression, force_compression)
         chan = self.tc.open_session()
         chan.exec_command('yes')
         schan = self.ts.accept(1.0)
 
         bytes = self.tc.packetizer._Packetizer__sent_bytes
-        chan.send('x' * 1024)
+        chan.send(b'x' * 1024)
         bytes2 = self.tc.packetizer._Packetizer__sent_bytes
         # tests show this is actually compressed to *52 bytes*!  including packet overhead!  nice!! :)
         self.assert_(bytes2 - bytes < 1024)
@@ -447,7 +444,8 @@ class TransportTest (unittest.TestCase):
         schan = self.ts.accept(1.0)
         
         requested = []
-        def handler(c, (addr, port)):
+        def handler(c, xxx_todo_changeme):
+            (addr, port) = xxx_todo_changeme
             requested.append((addr, port))
             self.tc._queue_incoming_channel(c)
             
@@ -482,7 +480,9 @@ class TransportTest (unittest.TestCase):
         schan = self.ts.accept(1.0)
         
         requested = []
-        def handler(c, (origin_addr, origin_port), (server_addr, server_port)):
+        def handler(c, xxx_todo_changeme1, xxx_todo_changeme2):
+            (origin_addr, origin_port) = xxx_todo_changeme1
+            (server_addr, server_port) = xxx_todo_changeme2
             requested.append((origin_addr, origin_port))
             requested.append((server_addr, server_port))
             self.tc._queue_incoming_channel(c)
@@ -587,7 +587,7 @@ class TransportTest (unittest.TestCase):
 
         self.assertEquals(chan.send_ready(), True)
         total = 0
-        K = '*' * 1024
+        K = b'*' * 1024
         while total < 1024 * 1024:
             chan.send(K)
             total += len(K)
@@ -660,7 +660,7 @@ class TransportTest (unittest.TestCase):
             
             def run(self):
                 try:
-                    for i in xrange(1, 1+self.iterations):
+                    for i in range(1, 1+self.iterations):
                         if self.done_event.isSet():
                             break
                         self.watchdog_event.set()

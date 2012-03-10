@@ -59,46 +59,46 @@ __version__ = "1.7.13"
 __license__ = "GNU Lesser General Public License (LGPL)"
 
 
-from transport import SecurityOptions, Transport
-from client import SSHClient, MissingHostKeyPolicy, AutoAddPolicy, RejectPolicy, WarningPolicy
-from auth_handler import AuthHandler
-from channel import Channel, ChannelFile
-from ssh_exception import SSHException, PasswordRequiredException, \
+from .transport import SecurityOptions, Transport
+from .client import SSHClient, MissingHostKeyPolicy, AutoAddPolicy, RejectPolicy, WarningPolicy
+from .auth_handler import AuthHandler
+from .channel import Channel, ChannelFile
+from .ssh_exception import SSHException, PasswordRequiredException, \
     BadAuthenticationType, ChannelException, BadHostKeyException, \
     AuthenticationException
-from server import ServerInterface, SubsystemHandler, InteractiveQuery
-from rsakey import RSAKey
-from dsskey import DSSKey
-from sftp import SFTPError, BaseSFTP
-from sftp_client import SFTP, SFTPClient
-from sftp_server import SFTPServer
-from sftp_attr import SFTPAttributes
-from sftp_handle import SFTPHandle
-from sftp_si import SFTPServerInterface
-from sftp_file import SFTPFile
-from message import Message
-from packet import Packetizer
-from file import BufferedFile
-from agent import Agent, AgentKey
-from pkey import PKey
-from hostkeys import HostKeys
-from config import SSHConfig
+from .server import ServerInterface, SubsystemHandler, InteractiveQuery
+from .rsakey import RSAKey
+from .dsskey import DSSKey
+from .sftp import SFTPError, BaseSFTP
+from .sftp_client import SFTP, SFTPClient
+from .sftp_server import SFTPServer
+from .sftp_attr import SFTPAttributes
+from .sftp_handle import SFTPHandle
+from .sftp_si import SFTPServerInterface
+from .sftp_file import SFTPFile
+from .message import Message
+from .packet import Packetizer
+from .file import BufferedFile
+from .agent import Agent, AgentKey
+from .pkey import PKey
+from .hostkeys import HostKeys
+from .config import SSHConfig
 
 # fix module names for epydoc
-for c in locals().values():
+for c in list(locals().values()):
     if issubclass(type(c), type) or type(c).__name__ == 'classobj':
         # classobj for exceptions :/
         c.__module__ = __name__
 del c
 
-from common import AUTH_SUCCESSFUL, AUTH_PARTIALLY_SUCCESSFUL, AUTH_FAILED, \
+from .common import AUTH_SUCCESSFUL, AUTH_PARTIALLY_SUCCESSFUL, AUTH_FAILED, \
      OPEN_SUCCEEDED, OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED,  OPEN_FAILED_CONNECT_FAILED, \
      OPEN_FAILED_UNKNOWN_CHANNEL_TYPE, OPEN_FAILED_RESOURCE_SHORTAGE
 
-from sftp import SFTP_OK, SFTP_EOF, SFTP_NO_SUCH_FILE, SFTP_PERMISSION_DENIED, SFTP_FAILURE, \
+from .sftp import SFTP_OK, SFTP_EOF, SFTP_NO_SUCH_FILE, SFTP_PERMISSION_DENIED, SFTP_FAILURE, \
      SFTP_BAD_MESSAGE, SFTP_NO_CONNECTION, SFTP_CONNECTION_LOST, SFTP_OP_UNSUPPORTED
 
-from common import io_sleep
+from .common import io_sleep
 
 __all__ = [ 'Transport',
             'SSHClient',

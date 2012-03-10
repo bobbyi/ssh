@@ -67,7 +67,7 @@ class Packetizer (object):
         self.__dump_packets = False
         self.__need_rekey = False
         self.__init_count = 0
-        self.__remainder = ''
+        self.__remainder = b''
 
         # used for noticing when to re-key:
         self.__sent_bytes = 0
@@ -85,12 +85,12 @@ class Packetizer (object):
         self.__block_engine_in = None
         self.__mac_engine_out = None
         self.__mac_engine_in = None
-        self.__mac_key_out = ''
-        self.__mac_key_in = ''
+        self.__mac_key_out = b''
+        self.__mac_key_in = b''
         self.__compress_engine_out = None
         self.__compress_engine_in = None
-        self.__sequence_number_out = 0L
-        self.__sequence_number_in = 0L
+        self.__sequence_number_out = 0
+        self.__sequence_number_in = 0
 
         # lock around outbound writes (packet computation)
         self.__write_lock = threading.RLock()
@@ -194,14 +194,12 @@ class Packetizer (object):
         @raise EOFError: if the socket was closed before all the bytes could
             be read
         """
-        out = ''
+        out = b''
         # handle over-reading from reading the banner line
         if len(self.__remainder) > 0:
             out = self.__remainder[:n]
             self.__remainder = self.__remainder[n:]
             n -= len(out)
-        if PY22:
-            return self._py22_read_all(n, out)
         while n > 0:
             got_timeout = False
             try:
@@ -212,7 +210,7 @@ class Packetizer (object):
                 n -= len(x)
             except socket.timeout:
                 got_timeout = True
-            except socket.error, e:
+            except socket.error as e:
                 # on Linux, sometimes instead of socket.timeout, we get
                 # EAGAIN.  this is a bug in recent (> 2.6.9) kernels but
                 # we need to work around it.
@@ -241,7 +239,7 @@ class Packetizer (object):
                 n = self.__socket.send(out)
             except socket.timeout:
                 got_timeout = True
-            except socket.error, e:
+            except socket.error as e:
                 if (type(e.args) is tuple) and (len(e.args) > 0) and (e.args[0] == errno.EAGAIN):
                     got_timeout = True
                 elif (type(e.args) is tuple) and (len(e.args) > 0) and (e.args[0] == errno.EINTR):
@@ -269,12 +267,12 @@ class Packetizer (object):
         line, so it's okay to attempt large reads.
         """
         buf = self.__remainder
-        while not '\n' in buf:
+        while not b'\n' in buf:
             buf += self._read_timeout(timeout)
-        n = buf.index('\n')
+        n = buf.index(b'\n')
         self.__remainder = buf[n+1:]
         buf = buf[:n]
-        if (len(buf) > 0) and (buf[-1] == '\r'):
+        if (len(buf) > 0) and (buf[-1] == b'\r'):
             buf = buf[:-1]
         return buf
 
@@ -282,9 +280,8 @@ class Packetizer (object):
         """
         Write a block of data using the current cipher, as an SSH block.
         """
-        # encrypt this sucka
-        data = str(data)
-        cmd = ord(data[0])
+        data = bytes(data)
+        cmd = ord(data[0:1])
         if cmd in MSG_NAMES:
             cmd_name = MSG_NAMES[cmd]
         else:
@@ -306,7 +303,7 @@ class Packetizer (object):
             if self.__block_engine_out != None:
                 payload = struct.pack('>I', self.__sequence_number_out) + packet
                 out += compute_hmac(self.__mac_key_out, payload, self.__mac_engine_out)[:self.__mac_size_out]
-            self.__sequence_number_out = (self.__sequence_number_out + 1) & 0xffffffffL
+            self.__sequence_number_out = (self.__sequence_number_out + 1) & 0xffffffff
             self.write_all(out)
 
             self.__sent_bytes += len(out)
@@ -354,7 +351,7 @@ class Packetizer (object):
             my_mac = compute_hmac(self.__mac_key_in, mac_payload, self.__mac_engine_in)[:self.__mac_size_in]
             if my_mac != mac:
                 raise SSHException('Mismatched MAC')
-        padding = ord(packet[0])
+        padding = ord(packet[0:1])
         payload = packet[1:packet_size - padding]
         
         if self.__dump_packets:
@@ -365,7 +362,7 @@ class Packetizer (object):
 
         msg = Message(payload[1:])
         msg.seqno = self.__sequence_number_in
-        self.__sequence_number_in = (self.__sequence_number_in + 1) & 0xffffffffL
+        self.__sequence_number_in = (self.__sequence_number_in + 1) & 0xffffffff
 
         # check for rekey
         self.__received_bytes += packet_size + self.__mac_size_in + 4
@@ -384,7 +381,7 @@ class Packetizer (object):
             self.__received_packets_overflow = 0
             self._trigger_rekey()
 
-        cmd = ord(payload[0])
+        cmd = ord(payload[0:1])
         if cmd in MSG_NAMES:
             cmd_name = MSG_NAMES[cmd]
         else:
@@ -416,40 +413,7 @@ class Packetizer (object):
             self.__keepalive_callback()
             self.__keepalive_last = now
 
-    def _py22_read_all(self, n, out):
-        while n > 0:
-            r, w, e = select.select([self.__socket], [], [], 0.1)
-            if self.__socket not in r:
-                if self.__closed:
-                    raise EOFError()
-                self._check_keepalive()
-            else:
-                x = self.__socket.recv(n)
-                if len(x) == 0:
-                    raise EOFError()
-                out += x
-                n -= len(x)
-        return out
-
-    def _py22_read_timeout(self, timeout):
-        start = time.time()
-        while True:
-            r, w, e = select.select([self.__socket], [], [], 0.1)
-            if self.__socket in r:
-                x = self.__socket.recv(1)
-                if len(x) == 0:
-                    raise EOFError()
-                break
-            if self.__closed:
-                raise EOFError()
-            now = time.time()
-            if now - start >= timeout:
-                raise socket.timeout()
-        return x
-
     def _read_timeout(self, timeout):
-        if PY22:
-            return self._py22_read_timeout(timeout)
         start = time.time()
         while True:
             try:
@@ -477,7 +441,7 @@ class Packetizer (object):
         else:
             # cute trick i caught openssh doing: if we're not encrypting,
             # don't waste random bytes for the padding
-            packet += (chr(0) * padding)
+            packet += (b'\x00' * padding)
         return packet
 
     def _trigger_rekey(self):

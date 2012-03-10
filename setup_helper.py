@@ -62,7 +62,7 @@ def make_tarball(base_name, base_dir, compress='gzip',
     tarfile_compress_flag = {'gzip':'gz', 'bzip2':'bz2'}
     compress_flags = {'compress': ["-f"]}
 
-    if compress is not None and compress not in compress_ext.keys():
+    if compress is not None and compress not in list(compress_ext.keys()):
         raise ValueError("bad value for 'compress': must be None, 'gzip',"
                          "'bzip2' or 'compress'")
 

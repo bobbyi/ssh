@@ -121,7 +121,7 @@ class BufferedPipe (object):
         @raise PipeTimeout: if a timeout was specified and no data was ready
             before that timeout
         """
-        out = ''
+        out = b''
         self._lock.acquire()
         try:
             if len(self._buffer) == 0:
