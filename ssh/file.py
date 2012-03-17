@@ -462,11 +462,13 @@ class BufferedFile (object):
             self.newlines += (newline,)
 
     def _encode(self, data):
-        if not (self._flags & self.FLAG_BINARY):
-            data = data.encode('ascii')
+        if str != bytes:
+            if not (self._flags & self.FLAG_BINARY):
+                data = data.encode('ascii')
         return data
 
     def _decode(self, data):
-        if not (self._flags & self.FLAG_BINARY):
-            data = data.decode('ascii')
+        if str != bytes:
+            if not (self._flags & self.FLAG_BINARY):
+                data = data.decode('ascii')
         return data
