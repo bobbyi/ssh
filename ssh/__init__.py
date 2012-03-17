@@ -59,30 +59,30 @@ __version__ = "1.7.13"
 __license__ = "GNU Lesser General Public License (LGPL)"
 
 
-from transport import SecurityOptions, Transport
-from client import SSHClient, MissingHostKeyPolicy, AutoAddPolicy, RejectPolicy, WarningPolicy
-from auth_handler import AuthHandler
-from channel import Channel, ChannelFile
-from ssh_exception import SSHException, PasswordRequiredException, \
+from ssh.transport import SecurityOptions, Transport
+from ssh.client import SSHClient, MissingHostKeyPolicy, AutoAddPolicy, RejectPolicy, WarningPolicy
+from ssh.auth_handler import AuthHandler
+from ssh.channel import Channel, ChannelFile
+from ssh.ssh_exception import SSHException, PasswordRequiredException, \
     BadAuthenticationType, ChannelException, BadHostKeyException, \
     AuthenticationException
-from server import ServerInterface, SubsystemHandler, InteractiveQuery
-from rsakey import RSAKey
-from dsskey import DSSKey
-from sftp import SFTPError, BaseSFTP
-from sftp_client import SFTP, SFTPClient
-from sftp_server import SFTPServer
-from sftp_attr import SFTPAttributes
-from sftp_handle import SFTPHandle
-from sftp_si import SFTPServerInterface
-from sftp_file import SFTPFile
-from message import Message
-from packet import Packetizer
-from file import BufferedFile
-from agent import Agent, AgentKey
-from pkey import PKey
-from hostkeys import HostKeys
-from config import SSHConfig
+from ssh.server import ServerInterface, SubsystemHandler, InteractiveQuery
+from ssh.rsakey import RSAKey
+from ssh.dsskey import DSSKey
+from ssh.sftp import SFTPError, BaseSFTP
+from ssh.sftp_client import SFTP, SFTPClient
+from ssh.sftp_server import SFTPServer
+from ssh.sftp_attr import SFTPAttributes
+from ssh.sftp_handle import SFTPHandle
+from ssh.sftp_si import SFTPServerInterface
+from ssh.sftp_file import SFTPFile
+from ssh.message import Message
+from ssh.packet import Packetizer
+from ssh.file import BufferedFile
+from ssh.agent import Agent, AgentKey
+from ssh.pkey import PKey
+from ssh.hostkeys import HostKeys
+from ssh.config import SSHConfig
 
 # fix module names for epydoc
 for c in locals().values():
@@ -91,14 +91,14 @@ for c in locals().values():
         c.__module__ = __name__
 del c
 
-from common import AUTH_SUCCESSFUL, AUTH_PARTIALLY_SUCCESSFUL, AUTH_FAILED, \
+from ssh.common import AUTH_SUCCESSFUL, AUTH_PARTIALLY_SUCCESSFUL, AUTH_FAILED, \
      OPEN_SUCCEEDED, OPEN_FAILED_ADMINISTRATIVELY_PROHIBITED,  OPEN_FAILED_CONNECT_FAILED, \
      OPEN_FAILED_UNKNOWN_CHANNEL_TYPE, OPEN_FAILED_RESOURCE_SHORTAGE
 
-from sftp import SFTP_OK, SFTP_EOF, SFTP_NO_SUCH_FILE, SFTP_PERMISSION_DENIED, SFTP_FAILURE, \
+from ssh.sftp import SFTP_OK, SFTP_EOF, SFTP_NO_SUCH_FILE, SFTP_PERMISSION_DENIED, SFTP_FAILURE, \
      SFTP_BAD_MESSAGE, SFTP_NO_CONNECTION, SFTP_CONNECTION_LOST, SFTP_OP_UNSUPPORTED
 
-from common import io_sleep
+from ssh.common import io_sleep
 
 __all__ = [ 'Transport',
             'SSHClient',

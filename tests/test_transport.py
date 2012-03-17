@@ -664,7 +664,6 @@ class TransportTest (unittest.TestCase):
                         if self.done_event.isSet():
                             break
                         self.watchdog_event.set()
-                        #print i, "SEND"
                         self.chan.send("x" * 2048)
                 finally:
                     self.done_event.set()

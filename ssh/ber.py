@@ -17,7 +17,7 @@
 # 51 Franklin Street, Suite 500, Boston, MA  02110-1335  USA.
 
 
-import util
+from ssh import util
 
 
 class BERException (Exception):
