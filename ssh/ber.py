@@ -108,16 +108,16 @@ class BER(object):
         self.content += val
 
     def encode(self, x):
-        if type(x) is bool:
+        if isinstance(x, bool):
             if x:
                 self.encode_tlv(1, '\xff')
             else:
                 self.encode_tlv(1, '\x00')
-        elif (type(x) is int) or (type(x) is long):
+        elif (isinstance(x, int)) or (isinstance(x, long)):
             self.encode_tlv(2, util.deflate_long(x))
-        elif type(x) is str:
+        elif isinstance(x, str):
             self.encode_tlv(4, x)
-        elif (type(x) is list) or (type(x) is tuple):
+        elif (isinstance(x, list)) or (isinstance(x, tuple)):
             self.encode_tlv(0x30, self.encode_sequence(x))
         else:
             raise BERException('Unknown type for encoding: %s' % repr(type(x)))

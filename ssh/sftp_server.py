@@ -178,13 +178,13 @@ class SFTPServer (BaseSFTP, SubsystemHandler):
         msg = Message()
         msg.add_int(request_number)
         for item in arg:
-            if type(item) is int:
+            if isinstance(item, int):
                 msg.add_int(item)
-            elif type(item) is long:
+            elif isinstance(item, long):
                 msg.add_int64(item)
-            elif type(item) is str:
+            elif isinstance(item, str):
                 msg.add_string(item)
-            elif type(item) is SFTPAttributes:
+            elif isinstance(item, SFTPAttributes):
                 item._pack(msg)
             else:
                 raise Exception('unknown type for ' + repr(item) + ' type ' + repr(type(item)))
@@ -281,7 +281,7 @@ class SFTPServer (BaseSFTP, SubsystemHandler):
             hash_obj = alg.new()
             while count < blocklen:
                 data = f.read(offset, chunklen)
-                if not type(data) is str:
+                if not isinstance(data, str):
                     self._send_status(request_number, data, 'Unable to hash file')
                     return
                 hash_obj.update(data)
@@ -341,7 +341,7 @@ class SFTPServer (BaseSFTP, SubsystemHandler):
                 self._send_status(request_number, SFTP_BAD_MESSAGE, 'Invalid handle')
                 return
             data = self.file_table[handle].read(offset, length)
-            if type(data) is str:
+            if isinstance(data, str):
                 if len(data) == 0:
                     self._send_status(request_number, SFTP_EOF)
                 else:
@@ -419,7 +419,7 @@ class SFTPServer (BaseSFTP, SubsystemHandler):
         elif t == CMD_READLINK:
             path = msg.get_string()
             resp = self.server.readlink(path)
-            if type(resp) is str:
+            if isinstance(resp, str):
                 self._response(request_number, CMD_NAME, 1, resp, '', SFTPAttributes())
             else:
                 self._send_status(request_number, resp)

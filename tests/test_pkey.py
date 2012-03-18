@@ -147,7 +147,7 @@ class KeyTest (unittest.TestCase):
         # verify that the rsa private key can sign and verify
         key = RSAKey.from_private_key_file('tests/test_rsa.key')
         msg = key.sign_ssh_data(rng, 'ice weasels')
-        self.assert_(type(msg) is Message)
+        self.assert_(isinstance(msg, Message))
         msg.rewind()
         self.assertEquals('ssh-rsa', msg.get_string())
         sig = ''.join([chr(int(x, 16)) for x in SIGNED_RSA.split(':')])
@@ -160,7 +160,7 @@ class KeyTest (unittest.TestCase):
         # verify that the dss private key can sign and verify
         key = DSSKey.from_private_key_file('tests/test_dss.key')
         msg = key.sign_ssh_data(rng, 'ice weasels')
-        self.assert_(type(msg) is Message)
+        self.assert_(isinstance(msg, Message))
         msg.rewind()
         self.assertEquals('ssh-dss', msg.get_string())
         # can't do the same test as we do for RSA, because DSS signatures

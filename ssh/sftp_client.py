@@ -78,7 +78,7 @@ class SFTPClient (BaseSFTP):
         self._cwd = None
         # request # -> SFTPFile
         self._expecting = weakref.WeakValueDictionary()
-        if type(sock) is Channel:
+        if isinstance(sock, Channel):
             # override default logger
             transport = self.sock.get_transport()
             self.logger = util.get_logger(transport.get_log_channel() + '.sftp')
@@ -369,7 +369,7 @@ class SFTPClient (BaseSFTP):
         """
         dest = self._adjust_cwd(dest)
         self._log(DEBUG, 'symlink(%r, %r)' % (source, dest))
-        if type(source) is unicode:
+        if isinstance(source, unicode):
             source = source.encode('utf-8')
         self._request(CMD_SYMLINK, source, dest)
 
@@ -641,13 +641,13 @@ class SFTPClient (BaseSFTP):
             msg = Message()
             msg.add_int(self.request_number)
             for item in arg:
-                if type(item) is int:
+                if isinstance(item, int):
                     msg.add_int(item)
-                elif type(item) is long:
+                elif isinstance(item, long):
                     msg.add_int64(item)
-                elif type(item) is str:
+                elif isinstance(item, str):
                     msg.add_string(item)
-                elif type(item) is SFTPAttributes:
+                elif isinstance(item, SFTPAttributes):
                     item._pack(msg)
                 else:
                     raise Exception('unknown type for %r type %r' % (item, type(item)))
@@ -716,7 +716,7 @@ class SFTPClient (BaseSFTP):
         Return an adjusted path if we're emulating a "current working
         directory" for the server.
         """
-        if type(path) is unicode:
+        if isinstance(path, unicode):
             path = path.encode('utf-8')
         if self._cwd is None:
             return path

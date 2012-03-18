@@ -79,7 +79,7 @@ class KexGroup1(object):
         # therefore q can be approximated as a 2^1023.  we drop the subset of
         # potential x where the first 63 bits are 1, because some of those will be
         # larger than q (but this is a tiny tiny subset of potential x).
-        while 1:
+        while True:
             x_bytes = self.transport.rng.read(128)
             x_bytes = chr(ord(x_bytes[0]) & 0x7f) + x_bytes[1:]
             if (x_bytes[:8] != '\x7F\xFF\xFF\xFF\xFF\xFF\xFF\xFF') and \

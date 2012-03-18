@@ -102,9 +102,9 @@ class SecurityOptions (object):
         return self._transport._preferred_compression
 
     def _set(self, name, orig, x):
-        if type(x) is list:
+        if isinstance(x, list):
             x = tuple(x)
-        if type(x) is not tuple:
+        if not isinstance(x, tuple):
             raise TypeError('expected tuple or list')
         possible = getattr(self._transport, orig).keys()
         forbidden = [n for n in x if n not in possible]
@@ -276,7 +276,7 @@ class Transport (threading.Thread):
                 sock = (hl[0], 22)
             else:
                 sock = (hl[0], int(hl[1]))
-        if type(sock) is tuple:
+        if isinstance(sock, tuple):
             # connect to the given (host, port)
             hostname, port = sock
             reason = 'No suitable address family'
@@ -1597,7 +1597,7 @@ class Transport (threading.Thread):
             #self._log(DEBUG, util.tb_strings())
             self.saved_exception = e
         except socket.error as e:
-            if type(e.args) is tuple:
+            if isinstance(e.args, tuple):
                 emsg = '%s (%d)' % (e.args[1], e.args[0])
             else:
                 emsg = e.args
@@ -1936,7 +1936,7 @@ class Transport (threading.Thread):
         else:
             ok = self.server_object.check_global_request(kind, m)
         extra = ()
-        if type(ok) is tuple:
+        if isinstance(ok, tuple):
             extra = ok
             ok = True
         if want_reply:

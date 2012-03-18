@@ -271,18 +271,18 @@ class Message (object):
         return self
         
     def _add(self, i):
-        if type(i) is str:
+        if isinstance(i, str):
             return self.add_string(i)
-        elif type(i) is int:
+        elif isinstance(i, bool):
+            return self.add_boolean(i)
+        elif isinstance(i, int):
             return self.add_int(i)
-        elif type(i) is long:
+        elif isinstance(i, long):
             if i > 0xffffffffL:
                 return self.add_mpint(i)
             else:
                 return self.add_int(i)
-        elif type(i) is bool:
-            return self.add_boolean(i)
-        elif type(i) is list:
+        elif isinstance(i, list):
             return self.add_list(i)
         else:
             raise Exception('Unknown type')
