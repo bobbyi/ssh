@@ -49,10 +49,7 @@ from ssh.ssh_exception import SSHException, BadAuthenticationType, ChannelExcept
 from Crypto import Random
 from Crypto.Cipher import Blowfish, AES, DES3, ARC4
 from Crypto.Hash import SHA, MD5
-try:
-    from Crypto.Util import Counter
-except ImportError:
-    from ssh.util import Counter
+from Crypto.Util import Counter
 
 
 # for thread cleanup
