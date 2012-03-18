@@ -102,7 +102,7 @@ class SSHConfig (object):
         """
         matches = [x for x in self._config if fnmatch.fnmatch(hostname, x['host'])]
         # sort in order of shortest match (usually '*') to longest
-        matches.sort(lambda x,y: cmp(len(x['host']), len(y['host'])))
+        matches.sort(lambda x, y: cmp(len(x['host']), len(y['host'])))
         ret = {}
         for m in matches:
             ret.update(m)

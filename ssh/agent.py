@@ -108,7 +108,7 @@ class AgentProxyThread(threading.Thread):
         self._exit = False
 
     def run(self):
-        (r,addr) = self.get_connection()
+        (r, addr) = self.get_connection()
         self.__inr = r
         self.__addr = addr
         self._agent.connect()
@@ -151,7 +151,7 @@ class AgentLocalProxy(AgentProxyThread):
         try:
             conn.bind(self._agent._get_filename())
             conn.listen(1)
-            (r,addr) = conn.accept()
+            (r, addr) = conn.accept()
             return (r, addr)
         except:
             raise
