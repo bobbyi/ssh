@@ -61,7 +61,6 @@ class PKey (object):
         @raise SSHException: if a key cannot be created from the C{data} or
         C{msg} given, or no key was passed in.
         """
-        pass
 
     def __str__(self):
         """

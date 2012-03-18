@@ -56,7 +56,6 @@ class MissingHostKeyPolicy (object):
         the key, simply return.  To reject, raised an exception (which will
         be passed to the calling application).
         """
-        pass
 
 
 class AutoAddPolicy (MissingHostKeyPolicy):
