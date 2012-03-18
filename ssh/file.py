@@ -92,7 +92,7 @@ class BufferedFile (object):
         self._wbuffer = BytesIO()
         return
 
-    def next(self):
+    def __next__(self):
         """
         Returns the next line from the input, or raises L{StopIteration} when
         EOF is hit.  Unlike python file objects, it's okay to mix calls to
@@ -107,6 +107,9 @@ class BufferedFile (object):
         if not line:
             raise StopIteration
         return line
+
+    def next(self):
+        return self.__next__()
 
     def read(self, size=None):
         """
