@@ -22,7 +22,7 @@ L{HostKeys}
 
 import base64
 from Crypto.Hash import SHA, HMAC
-import UserDict
+from collections import MutableMapping
 
 from ssh.common import *
 from ssh.dsskey import DSSKey
@@ -88,7 +88,7 @@ class HostKeyEntry:
         return '<HostKeyEntry %r: %r>' % (self.hostnames, self.key)
 
 
-class HostKeys (UserDict.DictMixin):
+class HostKeys (MutableMapping):
     """
     Representation of an openssh-style "known hosts" file.  Host keys can be
     read from one or more files, and then individual hosts can be looked up to
@@ -189,7 +189,7 @@ class HostKeys (UserDict.DictMixin):
         @return: keys associated with this host (or C{None})
         @rtype: dict(str, L{PKey})
         """
-        class SubDict (UserDict.DictMixin):
+        class SubDict (MutableMapping):
             def __init__(self, hostname, entries, hostkeys):
                 self._hostname = hostname
                 self._entries = entries
@@ -217,6 +217,18 @@ class HostKeys (UserDict.DictMixin):
 
             def keys(self):
                 return [e.key.get_name() for e in self._entries if e.key is not None]
+
+            def __iter__(self):
+                return iter(self.keys())
+
+            def __len__(self):
+                return len(self.keys())
+
+            def __delitem__(self):
+                raise NotImplemented
+
+            def has_key(self, key):
+                return key in self
 
         entries = []
         for e in self._entries:
@@ -276,7 +288,6 @@ class HostKeys (UserDict.DictMixin):
                 self._entries.append(HostKeyEntry([hostname], entry[key_type]))
 
     def keys(self):
-        # python 2.4 sets would be nice here.
         ret = []
         for e in self._entries:
             for h in e.hostnames:
@@ -289,6 +300,18 @@ class HostKeys (UserDict.DictMixin):
         for k in self.keys():
             ret.append(self.lookup(k))
         return ret
+
+    def __iter__(self):
+        return iter(self.keys())
+
+    def __len__(self):
+        return len(self.keys())
+
+    def __delitem__(self):
+        raise NotImplemented
+
+    def has_key(self, key):
+        return key in self
 
     def hash_host(hostname, salt=None):
         """
@@ -313,4 +336,3 @@ class HostKeys (UserDict.DictMixin):
         hostkey = '|1|%s|%s' % (base64.encodestring(salt), base64.encodestring(hmac))
         return hostkey.replace('\n', '')
     hash_host = staticmethod(hash_host)
-
