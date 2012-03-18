@@ -29,7 +29,7 @@ import threading
 import unittest
 import random
 
-from Crypto.Util.py3compat import bchr as chr
+from Crypto.Util.py3compat import bchr
 from ssh import Transport, SecurityOptions, ServerInterface, RSAKey, DSSKey, \
     SSHException, BadAuthenticationType, InteractiveQuery, ChannelException
 from ssh import AUTH_FAILED, AUTH_PARTIALLY_SUCCESSFUL, AUTH_SUCCESSFUL
@@ -712,7 +712,7 @@ class TransportTest (unittest.TestCase):
                 # Simulate in-transit MSG_CHANNEL_WINDOW_ADJUST by sending it
                 # before responding to the incoming MSG_KEXINIT.
                 m2 = Message()
-                m2.add_byte(chr(MSG_CHANNEL_WINDOW_ADJUST))
+                m2.add_byte(bchr(MSG_CHANNEL_WINDOW_ADJUST))
                 m2.add_int(chan.remote_chanid)
                 m2.add_int(1)    # bytes to add
                 self._send_message(m2)

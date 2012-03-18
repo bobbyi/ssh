@@ -25,7 +25,7 @@ import io
 import os
 import unittest
 from Crypto.Hash import SHA
-from Crypto.Util.py3compat import bord as ord
+from Crypto.Util.py3compat import bord
 import ssh.util
 
 
@@ -120,7 +120,7 @@ class UtilTest (unittest.TestCase):
 
     def test_4_generate_key_bytes(self):
         x = ssh.util.generate_key_bytes(SHA, 'ABCDEFGH', 'This is my secret passphrase.', 64)
-        hex = ''.join(['%02x' % ord(c) for c in x])
+        hex = ''.join(['%02x' % bord(c) for c in x])
         self.assertEquals(hex, '9110e2f6793b69363e58173e9436b13a5a4b339005741d5c680e505f57d871347b4239f14fb5c46e857d5e100424873ba849ac699cea98d729e57b3e84378e8b')
 
     def test_5_host_keys(self):

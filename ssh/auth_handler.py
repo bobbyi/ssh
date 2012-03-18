@@ -26,7 +26,7 @@ import weakref
 # this helps freezing utils
 import encodings.utf_8
 
-from Crypto.Util.py3compat import bchr as chr
+from Crypto.Util.py3compat import bchr
 from ssh.common import *
 from ssh import util
 from ssh.message import Message
@@ -120,13 +120,13 @@ class AuthHandler (object):
 
     def _request_auth(self):
         m = Message()
-        m.add_byte(chr(MSG_SERVICE_REQUEST))
+        m.add_byte(bchr(MSG_SERVICE_REQUEST))
         m.add_string('ssh-userauth')
         self.transport._send_message(m)
 
     def _disconnect_service_not_available(self):
         m = Message()
-        m.add_byte(chr(MSG_DISCONNECT))
+        m.add_byte(bchr(MSG_DISCONNECT))
         m.add_int(DISCONNECT_SERVICE_NOT_AVAILABLE)
         m.add_string('Service not available')
         m.add_string('en')
@@ -135,7 +135,7 @@ class AuthHandler (object):
 
     def _disconnect_no_more_auth(self):
         m = Message()
-        m.add_byte(chr(MSG_DISCONNECT))
+        m.add_byte(bchr(MSG_DISCONNECT))
         m.add_int(DISCONNECT_NO_MORE_AUTH_METHODS_AVAILABLE)
         m.add_string('No more auth methods available')
         m.add_string('en')
@@ -145,7 +145,7 @@ class AuthHandler (object):
     def _get_session_blob(self, key, service, username):
         m = Message()
         m.add_string(self.transport.session_id)
-        m.add_byte(chr(MSG_USERAUTH_REQUEST))
+        m.add_byte(bchr(MSG_USERAUTH_REQUEST))
         m.add_string(username)
         m.add_string(service)
         m.add_string('publickey')
@@ -180,7 +180,7 @@ class AuthHandler (object):
         if self.transport.server_mode and (service == 'ssh-userauth'):
             # accepted
             m = Message()
-            m.add_byte(chr(MSG_SERVICE_ACCEPT))
+            m.add_byte(bchr(MSG_SERVICE_ACCEPT))
             m.add_string(service)
             self.transport._send_message(m)
             return
@@ -192,7 +192,7 @@ class AuthHandler (object):
         if service == 'ssh-userauth':
             self.transport._log(DEBUG, 'userauth is OK')
             m = Message()
-            m.add_byte(chr(MSG_USERAUTH_REQUEST))
+            m.add_byte(bchr(MSG_USERAUTH_REQUEST))
             m.add_string(self.username)
             m.add_string('ssh-connection')
             m.add_string(self.auth_method)
@@ -225,11 +225,11 @@ class AuthHandler (object):
         m = Message()
         if result == AUTH_SUCCESSFUL:
             self.transport._log(INFO, 'Auth granted (%s).' % method)
-            m.add_byte(chr(MSG_USERAUTH_SUCCESS))
+            m.add_byte(bchr(MSG_USERAUTH_SUCCESS))
             self.authenticated = True
         else:
             self.transport._log(INFO, 'Auth rejected (%s).' % method)
-            m.add_byte(chr(MSG_USERAUTH_FAILURE))
+            m.add_byte(bchr(MSG_USERAUTH_FAILURE))
             m.add_string(self.transport.server_object.get_allowed_auths(username))
             if result == AUTH_PARTIALLY_SUCCESSFUL:
                 m.add_boolean(1)
@@ -245,7 +245,7 @@ class AuthHandler (object):
     def _interactive_query(self, q):
         # make interactive query instead of response
         m = Message()
-        m.add_byte(chr(MSG_USERAUTH_INFO_REQUEST))
+        m.add_byte(bchr(MSG_USERAUTH_INFO_REQUEST))
         m.add_string(q.name)
         m.add_string(q.instructions)
         m.add_string('')
@@ -259,7 +259,7 @@ class AuthHandler (object):
         if not self.transport.server_mode:
             # er, uh... what?
             m = Message()
-            m.add_byte(chr(MSG_USERAUTH_FAILURE))
+            m.add_byte(bchr(MSG_USERAUTH_FAILURE))
             m.add_string('none')
             m.add_boolean(0)
             self.transport._send_message(m)
@@ -326,7 +326,7 @@ class AuthHandler (object):
                     # client wants to know if this key is acceptable, before it
                     # signs anything...  send special "ok" message
                     m = Message()
-                    m.add_byte(chr(MSG_USERAUTH_PK_OK))
+                    m.add_byte(bchr(MSG_USERAUTH_PK_OK))
                     m.add_string(keytype)
                     m.add_string(keyblob)
                     self.transport._send_message(m)
@@ -393,7 +393,7 @@ class AuthHandler (object):
         response_list = self.interactive_handler(title, instructions, prompt_list)
         
         m = Message()
-        m.add_byte(chr(MSG_USERAUTH_INFO_RESPONSE))
+        m.add_byte(bchr(MSG_USERAUTH_INFO_RESPONSE))
         m.add_int(len(response_list))
         for r in response_list:
             m.add_string(r)

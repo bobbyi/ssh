@@ -23,7 +23,7 @@ Some unit tests for public/private key objects.
 from binascii import hexlify, unhexlify
 import io
 import unittest
-from Crypto.Util.py3compat import bchr as chr
+from Crypto.Util.py3compat import bchr
 from ssh import RSAKey, DSSKey, Message, util
 from ssh.common import rng
 
@@ -150,7 +150,7 @@ class KeyTest (unittest.TestCase):
         self.assert_(isinstance(msg, Message))
         msg.rewind()
         self.assertEquals('ssh-rsa', msg.get_string())
-        sig = ''.join([chr(int(x, 16)) for x in SIGNED_RSA.split(':')])
+        sig = ''.join([bchr(int(x, 16)) for x in SIGNED_RSA.split(':')])
         self.assertEquals(sig, msg.get_string())
         msg.rewind()
         pub = RSAKey(data=str(key))

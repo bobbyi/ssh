@@ -28,7 +28,7 @@ import struct
 import traceback
 import threading
 
-from Crypto.Util.py3compat import bord as ord
+from Crypto.Util.py3compat import bord
 from ssh.common import *
 from ssh.config import SSHConfig
 
@@ -37,7 +37,7 @@ def inflate_long(s, always_positive=False):
     "turns a normalized byte string into a long-int (adapted from Crypto.Util.number)"
     out = 0L
     negative = 0
-    if not always_positive and (len(s) > 0) and (ord(s[0]) >= 0x80):
+    if not always_positive and (len(s) > 0) and (bord(s[0]) >= 0x80):
         negative = 1
     if len(s) % 4:
         filler = '\x00'
@@ -73,9 +73,9 @@ def deflate_long(n, add_sign_padding=True):
             s = '\xff'
     s = s[i[0]:]
     if add_sign_padding:
-        if (n == 0) and (ord(s[0]) >= 0x80):
+        if (n == 0) and (bord(s[0]) >= 0x80):
             s = '\x00' + s
-        if (n == -1) and (ord(s[0]) < 0x80):
+        if (n == -1) and (bord(s[0]) < 0x80):
             s = '\xff' + s
     return s
 
@@ -90,8 +90,8 @@ def format_binary(data, prefix=''):
     return [prefix + x for x in out]
 
 def format_binary_line(data):
-    left = ' '.join(['%02X' % ord(c) for c in data])
-    right = ''.join([('.%c..' % c)[(ord(c)+63)//95] for c in data])
+    left = ' '.join(['%02X' % bord(c) for c in data])
+    right = ''.join([('.%c..' % c)[(bord(c)+63)//95] for c in data])
     return '%-50s %s' % (left, right)
 
 def hexify(s):
@@ -103,17 +103,17 @@ def unhexify(s):
 def safe_string(s):
     out = ''
     for c in s:
-        if (ord(c) >= 32) and (ord(c) <= 127):
+        if (bord(c) >= 32) and (bord(c) <= 127):
             out += c
         else:
-            out += '%%%02X' % ord(c)
+            out += '%%%02X' % bord(c)
     return out
 
-# ''.join([['%%%02X' % ord(c), c][(ord(c) >= 32) and (ord(c) <= 127)] for c in s])
+# ''.join([['%%%02X' % bord(c), c][(bord(c) >= 32) and (bord(c) <= 127)] for c in s])
 
 def bit_length(n):
     norm = deflate_long(n, 0)
-    hbyte = ord(norm[0])
+    hbyte = bord(norm[0])
     if hbyte == 0:
         return 1
     bitlen = len(norm) * 8

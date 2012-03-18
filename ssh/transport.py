@@ -32,7 +32,7 @@ from Crypto import Random
 from Crypto.Cipher import Blowfish, AES, DES3, ARC4
 from Crypto.Hash import SHA, MD5
 from Crypto.Util import Counter
-from Crypto.Util.py3compat import bord as ord, bchr as chr
+from Crypto.Util.py3compat import bord, bchr
 
 import ssh
 from ssh import util
@@ -721,7 +721,7 @@ class Transport (threading.Thread):
         try:
             chanid = self._next_channel()
             m = Message()
-            m.add_byte(chr(MSG_CHANNEL_OPEN))
+            m.add_byte(bchr(MSG_CHANNEL_OPEN))
             m.add_string(kind)
             m.add_int(chanid)
             m.add_int(self.window_size)
@@ -847,9 +847,9 @@ class Transport (threading.Thread):
         @type bytes: int
         """
         m = Message()
-        m.add_byte(chr(MSG_IGNORE))
+        m.add_byte(bchr(MSG_IGNORE))
         if bytes is None:
-            bytes = (ord(rng.read(1)[0]) % 32) + 10
+            bytes = (bord(rng.read(1)[0]) % 32) + 10
         m.add_bytes(rng.read(bytes))
         self._send_user_message(m)
 
@@ -913,7 +913,7 @@ class Transport (threading.Thread):
         if wait:
             self.completion_event = threading.Event()
         m = Message()
-        m.add_byte(chr(MSG_GLOBAL_REQUEST))
+        m.add_byte(bchr(MSG_GLOBAL_REQUEST))
         m.add_string(kind)
         m.add_boolean(wait)
         if data is not None:
@@ -1581,7 +1581,7 @@ class Transport (threading.Thread):
                 else:
                     self._log(WARNING, 'Oops, unhandled type %d' % ptype)
                     msg = Message()
-                    msg.add_byte(chr(MSG_UNIMPLEMENTED))
+                    msg.add_byte(bchr(MSG_UNIMPLEMENTED))
                     msg.add_int(m.seqno)
                     self._send_message(msg)
         except SSHException as e:
@@ -1698,7 +1698,7 @@ class Transport (threading.Thread):
             available_server_keys = self._preferred_keys
 
         m = Message()
-        m.add_byte(chr(MSG_KEXINIT))
+        m.add_byte(bchr(MSG_KEXINIT))
         m.add_bytes(rng.read(16))
         m.add_list(self._preferred_kex)
         m.add_list(available_server_keys)
@@ -1811,7 +1811,7 @@ class Transport (threading.Thread):
         # actually some extra bytes (one NUL byte in openssh's case) added to
         # the end of the packet but not parsed.  turns out we need to throw
         # away those bytes because they aren't part of the hash.
-        self.remote_kex_init = chr(MSG_KEXINIT) + m.get_so_far()
+        self.remote_kex_init = bchr(MSG_KEXINIT) + m.get_so_far()
 
     def _activate_inbound(self):
         "switch on newly negotiated encryption parameters for inbound traffic"
@@ -1840,7 +1840,7 @@ class Transport (threading.Thread):
     def _activate_outbound(self):
         "switch on newly negotiated encryption parameters for outbound traffic"
         m = Message()
-        m.add_byte(chr(MSG_NEWKEYS))
+        m.add_byte(bchr(MSG_NEWKEYS))
         self._send_message(m)
         block_size = self._cipher_info[self.local_cipher]['block-size']
         if self.server_mode:
@@ -1938,10 +1938,10 @@ class Transport (threading.Thread):
         if want_reply:
             msg = Message()
             if ok:
-                msg.add_byte(chr(MSG_REQUEST_SUCCESS))
+                msg.add_byte(bchr(MSG_REQUEST_SUCCESS))
                 msg.add(*extra)
             else:
-                msg.add_byte(chr(MSG_REQUEST_FAILURE))
+                msg.add_byte(bchr(MSG_REQUEST_FAILURE))
             self._send_message(msg)
 
     def _parse_request_success(self, m):
@@ -2054,7 +2054,7 @@ class Transport (threading.Thread):
                 reject = True
         if reject:
             msg = Message()
-            msg.add_byte(chr(MSG_CHANNEL_OPEN_FAILURE))
+            msg.add_byte(bchr(MSG_CHANNEL_OPEN_FAILURE))
             msg.add_int(chanid)
             msg.add_int(reason)
             msg.add_string('')
@@ -2073,7 +2073,7 @@ class Transport (threading.Thread):
         finally:
             self.lock.release()
         m = Message()
-        m.add_byte(chr(MSG_CHANNEL_OPEN_SUCCESS))
+        m.add_byte(bchr(MSG_CHANNEL_OPEN_SUCCESS))
         m.add_int(chanid)
         m.add_int(my_chanid)
         m.add_int(self.window_size)

@@ -22,7 +22,7 @@ Some unit tests for the key exchange protocols.
 
 from binascii import hexlify
 import unittest
-from Crypto.Util.py3compat import bchr as chr
+from Crypto.Util.py3compat import bchr
 import ssh.util
 from ssh.kex_group1 import KexGroup1
 from ssh.kex_gex import KexGex
@@ -31,7 +31,7 @@ from ssh import Message
 
 class FakeRng (object):
     def read(self, n):
-        return chr(0xcc) * n
+        return bchr(0xcc) * n
 
 
 class FakeKey (object):

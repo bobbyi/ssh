@@ -30,7 +30,7 @@ import tempfile
 import stat
 from select import select
 
-from Crypto.Util.py3compat import bord as ord, bchr as chr
+from Crypto.Util.py3compat import bord, bchr
 from ssh.ssh_exception import SSHException
 from ssh.message import Message
 from ssh.pkey import PKey
@@ -68,7 +68,7 @@ class AgentSSH(object):
 
     def _connect(self, conn):
         self._conn = conn
-        ptype, result = self._send_message(chr(SSH2_AGENTC_REQUEST_IDENTITIES))
+        ptype, result = self._send_message(bchr(SSH2_AGENTC_REQUEST_IDENTITIES))
         if ptype != SSH2_AGENT_IDENTITIES_ANSWER:
             raise SSHException('could not get keys from ssh-agent')
         keys = []
@@ -87,7 +87,7 @@ class AgentSSH(object):
         self._conn.send(struct.pack('>I', len(msg)) + msg)
         l = self._read_all(4)
         msg = Message(self._read_all(struct.unpack('>I', l)[0]))
-        return ord(msg.get_byte()[0]), msg
+        return bord(msg.get_byte()[0]), msg
 
     def _read_all(self, wanted):
         result = self._conn.recv(wanted)
@@ -342,7 +342,7 @@ class AgentKey(PKey):
 
     def sign_ssh_data(self, rng, data):
         msg = Message()
-        msg.add_byte(chr(SSH2_AGENTC_SIGN_REQUEST))
+        msg.add_byte(bchr(SSH2_AGENTC_SIGN_REQUEST))
         msg.add_string(self.blob)
         msg.add_string(data)
         msg.add_int(0)

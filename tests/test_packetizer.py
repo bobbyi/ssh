@@ -24,7 +24,7 @@ import unittest
 from loop import LoopSocket
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA, HMAC
-from Crypto.Util.py3compat import bchr as chr
+from Crypto.Util.py3compat import bchr
 from ssh import Message, Packetizer, util
 
 class PacketizerTest (unittest.TestCase):
@@ -42,7 +42,7 @@ class PacketizerTest (unittest.TestCase):
         # message has to be at least 16 bytes long, so we'll have at least one
         # block of data encrypted that contains zero random padding bytes
         m = Message()
-        m.add_byte(chr(100))
+        m.add_byte(bchr(100))
         m.add_int(100)
         m.add_int(1)
         m.add_int(900)
