@@ -83,10 +83,15 @@ class HostKeysTest (unittest.TestCase):
 
     def test_3_dict(self):
         hostdict = ssh.HostKeys('hostfile.temp')
+        if hasattr({}, 'has_key'): # Python 2.x
+            self.assert_(hostdict.has_key('secure.example.com'))
+            self.assert_(not hostdict.has_key('not.example.com'))
+            self.assert_(hostdict.has_key('secure.example.com'))
+            self.assert_(not hostdict.has_key('not.example.com'))
         self.assert_('secure.example.com' in hostdict)
         self.assert_('not.example.com' not in hostdict)
-        self.assert_(hostdict.has_key('secure.example.com'))
-        self.assert_(not hostdict.has_key('not.example.com'))
+        self.assert_('secure.example.com' in hostdict)
+        self.assert_('not.example.com' not in hostdict)
         x = hostdict.get('secure.example.com', None)
         self.assert_(x is not None)
         fp = hexlify(x['ssh-rsa'].get_fingerprint()).upper()
