@@ -457,7 +457,7 @@ class SFTPFile (BufferedFile):
             # save exception and re-raise it on next file operation
             try:
                 self.sftp._convert_status(msg)
-            except Exception, x:
+            except Exception as x:
                 self._saved_exception = x
             return
         if t != CMD_DATA:

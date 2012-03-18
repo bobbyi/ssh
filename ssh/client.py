@@ -427,7 +427,7 @@ class SSHClient (object):
                 self._log(DEBUG, 'Trying SSH key %s' % hexlify(pkey.get_fingerprint()))
                 self._transport.auth_publickey(username, pkey)
                 return
-            except SSHException, e:
+            except SSHException as e:
                 saved_exception = e
 
         for key_filename in key_filenames:
@@ -437,7 +437,7 @@ class SSHClient (object):
                     self._log(DEBUG, 'Trying key %s from %s' % (hexlify(key.get_fingerprint()), key_filename))
                     self._transport.auth_publickey(username, key)
                     return
-                except SSHException, e:
+                except SSHException as e:
                     saved_exception = e
 
         if allow_agent:
@@ -449,7 +449,7 @@ class SSHClient (object):
                     self._log(DEBUG, 'Trying SSH agent key %s' % hexlify(key.get_fingerprint()))
                     self._transport.auth_publickey(username, key)
                     return
-                except SSHException, e:
+                except SSHException as e:
                     saved_exception = e
 
         keyfiles = []
@@ -476,16 +476,16 @@ class SSHClient (object):
                 self._log(DEBUG, 'Trying discovered key %s in %s' % (hexlify(key.get_fingerprint()), filename))
                 self._transport.auth_publickey(username, key)
                 return
-            except SSHException, e:
+            except SSHException as e:
                 saved_exception = e
-            except IOError, e:
+            except IOError as e:
                 saved_exception = e
 
         if password is not None:
             try:
                 self._transport.auth_password(username, password)
                 return
-            except SSHException, e:
+            except SSHException as e:
                 saved_exception = e
 
         # if we got an auth-failed exception earlier, re-raise it
