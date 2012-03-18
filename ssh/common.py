@@ -95,20 +95,15 @@ CONNECTION_FAILED_CODE = {
 DISCONNECT_SERVICE_NOT_AVAILABLE, DISCONNECT_AUTH_CANCELLED_BY_USER, \
     DISCONNECT_NO_MORE_AUTH_METHODS_AVAILABLE = 7, 13, 14
 
-from Crypto import Random
+
+import logging
+from logging import DEBUG, INFO, WARNING, ERROR, CRITICAL
+
 
 # keep a crypto-strong PRNG nearby
+from Crypto import Random
 rng = Random.new()
 
-import sys
-import logging
-
-
-DEBUG = logging.DEBUG
-INFO = logging.INFO
-WARNING = logging.WARNING
-ERROR = logging.ERROR
-CRITICAL = logging.CRITICAL
 
 # Common IO/select/etc sleep period, in seconds
 io_sleep = 0.01

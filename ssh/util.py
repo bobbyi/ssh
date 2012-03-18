@@ -22,7 +22,6 @@ Useful functions used by the rest of ssh.
 
 from __future__ import generators
 
-import array
 from binascii import hexlify, unhexlify
 import sys
 import struct
@@ -32,18 +31,6 @@ import threading
 from Crypto.Util.py3compat import bord as ord
 from ssh.common import *
 from ssh.config import SSHConfig
-
-
-# Change by RogerB - python < 2.3 doesn't have enumerate so we implement it
-if sys.version_info < (2,3):
-    class enumerate:
-        def __init__ (self, sequence):
-            self.sequence = sequence
-        def __iter__ (self):
-            count = 0
-            for item in self.sequence:
-                yield (count, item)
-                count += 1
 
 
 def inflate_long(s, always_positive=False):

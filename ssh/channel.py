@@ -21,7 +21,6 @@ Abstraction for an SSH2 channel.
 """
 
 import binascii
-import sys
 import time
 import threading
 import socket

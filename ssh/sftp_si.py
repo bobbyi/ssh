@@ -21,6 +21,7 @@ L{SFTPServerInterface} is an interface to override for SFTP server support.
 """
 
 import os
+import sys
 
 from ssh.common import *
 from ssh.sftp import *

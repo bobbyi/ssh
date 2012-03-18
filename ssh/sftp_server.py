@@ -21,6 +21,7 @@ Server-mode SFTP support.
 """
 
 import os
+import sys
 import errno
 
 from Crypto.Hash import MD5, SHA
