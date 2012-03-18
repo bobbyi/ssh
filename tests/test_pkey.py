@@ -69,13 +69,6 @@ QPSch9pT9XHqn+1rZ4bK+QGA
 
 
 class KeyTest (unittest.TestCase):
-
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
-
     def test_1_generate_key_bytes(self):
         from Crypto.Hash import MD5
         key = util.generate_key_bytes(MD5, '\x01\x02\x03\x04', 'happy birthday', 30)
