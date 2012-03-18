@@ -89,6 +89,7 @@ class SFTPClient (BaseSFTP):
             raise SSHException('EOF during negotiation')
         self._log(INFO, 'Opened sftp connection (server version %d)' % server_version)
 
+    @classmethod
     def from_transport(cls, t):
         """
         Create an SFTP client channel from an open L{Transport}.
@@ -104,7 +105,6 @@ class SFTPClient (BaseSFTP):
             return None
         chan.invoke_subsystem('sftp')
         return cls(chan)
-    from_transport = classmethod(from_transport)
 
     def _log(self, level, msg, *args):
         if isinstance(msg, list):

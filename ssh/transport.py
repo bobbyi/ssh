@@ -554,6 +554,7 @@ class Transport (threading.Thread):
             pass
         return None
 
+    @staticmethod
     def load_server_moduli(filename=None):
         """
         I{(optional)}
@@ -594,7 +595,6 @@ class Transport (threading.Thread):
         # none succeeded
         Transport._modulus_pack = None
         return False
-    load_server_moduli = staticmethod(load_server_moduli)
 
     def close(self):
         """

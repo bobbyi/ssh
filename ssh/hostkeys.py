@@ -39,6 +39,7 @@ class HostKeyEntry:
         self.hostnames = hostnames
         self.key = key
 
+    @classmethod
     def from_line(cls, line):
         """
         Parses the given line of text to find the names for the host,
@@ -71,7 +72,6 @@ class HostKeyEntry:
             return None
 
         return cls(names, key)
-    from_line = classmethod(from_line)
 
     def to_line(self):
         """
@@ -313,6 +313,7 @@ class HostKeys (MutableMapping):
     def has_key(self, key):
         return key in self
 
+    @staticmethod
     def hash_host(hostname, salt=None):
         """
         Return a "hashed" form of the hostname, as used by openssh when storing
@@ -335,4 +336,3 @@ class HostKeys (MutableMapping):
         hmac = HMAC.HMAC(salt, hostname, SHA).digest()
         hostkey = '|1|%s|%s' % (base64.encodestring(salt), base64.encodestring(hmac))
         return hostkey.replace('\n', '')
-    hash_host = staticmethod(hash_host)
