@@ -68,7 +68,7 @@ class BigSFTPTest (unittest.TestCase):
                 f = sftp.open('%s/file%d.txt' % (FOLDER, i), 'w', 1)
                 f.write('this is file #%d.\n' % i)
                 f.close()
-                sftp.chmod('%s/file%d.txt' % (FOLDER, i), 0660)
+                sftp.chmod('%s/file%d.txt' % (FOLDER, i), 0o660)
 
             # now make sure every file is there, by creating a list of filenmes
             # and reading them in random order.

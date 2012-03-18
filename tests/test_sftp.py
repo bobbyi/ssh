@@ -289,16 +289,16 @@ class SFTPTest (unittest.TestCase):
             f.close()
 
             stat = sftp.stat(FOLDER + '/special')
-            sftp.chmod(FOLDER + '/special', (stat.st_mode & ~0777) | 0600)
+            sftp.chmod(FOLDER + '/special', (stat.st_mode & ~0o777) | 0o600)
             stat = sftp.stat(FOLDER + '/special')
-            expected_mode = 0600
+            expected_mode = 0o600
             if sys.platform == 'win32':
                 # chmod not really functional on windows
-                expected_mode = 0666
+                expected_mode = 0o666
             if sys.platform == 'cygwin':
                 # even worse.
-                expected_mode = 0644
-            self.assertEqual(stat.st_mode & 0777, expected_mode)
+                expected_mode = 0o644
+            self.assertEqual(stat.st_mode & 0o777, expected_mode)
             self.assertEqual(stat.st_size, 1024)
 
             mtime = stat.st_mtime - 3600
@@ -329,17 +329,17 @@ class SFTPTest (unittest.TestCase):
 
             f = sftp.open(FOLDER + '/special', 'r+')
             stat = f.stat()
-            f.chmod((stat.st_mode & ~0777) | 0600)
+            f.chmod((stat.st_mode & ~0o777) | 0o600)
             stat = f.stat()
 
-            expected_mode = 0600
+            expected_mode = 0o600
             if sys.platform == 'win32':
                 # chmod not really functional on windows
-                expected_mode = 0666
+                expected_mode = 0o666
             if sys.platform == 'cygwin':
                 # even worse.
-                expected_mode = 0644
-            self.assertEqual(stat.st_mode & 0777, expected_mode)
+                expected_mode = 0o644
+            self.assertEqual(stat.st_mode & 0o777, expected_mode)
             self.assertEqual(stat.st_size, 1024)
 
             mtime = stat.st_mtime - 3600

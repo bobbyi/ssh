@@ -194,8 +194,8 @@ class SFTPAttributes (object):
                 ks = 's'
             else:
                 ks = '?'
-            ks += self._rwx((self.st_mode & 0700) >> 6, self.st_mode & stat.S_ISUID)
-            ks += self._rwx((self.st_mode & 070) >> 3, self.st_mode & stat.S_ISGID)
+            ks += self._rwx((self.st_mode & 0o700) >> 6, self.st_mode & stat.S_ISUID)
+            ks += self._rwx((self.st_mode & 0o70) >> 3, self.st_mode & stat.S_ISGID)
             ks += self._rwx(self.st_mode & 7, self.st_mode & stat.S_ISVTX, True)
         else:
             ks = '?---------'
