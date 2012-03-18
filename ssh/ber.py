@@ -21,7 +21,7 @@ from Crypto.Util.py3compat import bord as ord, bchr as chr
 from ssh import util
 
 
-class BERException (Exception):
+class BERException(Exception):
     pass
 
 

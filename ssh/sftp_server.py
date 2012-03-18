@@ -187,7 +187,7 @@ class SFTPServer (BaseSFTP, SubsystemHandler):
             elif isinstance(item, SFTPAttributes):
                 item._pack(msg)
             else:
-                raise Exception('unknown type for ' + repr(item) + ' type ' + repr(type(item)))
+                raise TypeError('unknown type for ' + repr(item) + ' type ' + repr(type(item)))
         self._send_packet(t, str(msg))
 
     def _send_handle_response(self, request_number, handle, folder=False):
