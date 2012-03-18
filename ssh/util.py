@@ -91,16 +91,6 @@ def deflate_long(n, add_sign_padding=True):
             s = '\xff' + s
     return s
 
-def format_binary_weird(data):
-    out = ''
-    for i in enumerate(data):
-        out += '%02X' % ord(i[1])
-        if i[0] % 2:
-            out += ' '
-        if i[0] % 16 == 15:
-            out += '\n'
-    return out
-
 def format_binary(data, prefix=''):
     x = 0
     out = []
