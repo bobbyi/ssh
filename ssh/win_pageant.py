@@ -27,22 +27,14 @@ import tempfile
 import mmap
 import array
 import platform
+import ctypes
 import ctypes.wintypes
 
-# if you're on windows, you should have one of these, i guess?
-# ctypes is part of standard library since Python 2.5
-_has_win32all = False
-_has_ctypes = False
 try:
     # win32gui is preferred over win32ui to avoid MFC dependencies
     import win32gui
-    _has_win32all = True
 except ImportError:
-    try:
-        import ctypes
-        _has_ctypes = True
-    except ImportError:
-        pass
+    win32gui = None
 
 _AGENT_COPYDATA_ID = 0x804e50ba
 _AGENT_MAX_MSGLEN = 8192
@@ -52,28 +44,22 @@ win32con_WM_COPYDATA = 74
 
 
 def _get_pageant_window_object():
-    if _has_win32all:
+    if win32gui is not None:
         try:
-            hwnd = win32gui.FindWindow('Pageant', 'Pageant')
-            return hwnd
+            return win32gui.FindWindow('Pageant', 'Pageant')
         except win32gui.error:
             pass
-    elif _has_ctypes:
+    else:
         # Return 0 if there is no Pageant window.
         return ctypes.windll.user32.FindWindowA('Pageant', 'Pageant')
-    return None
 
 
 def can_talk_to_agent():
     """
     Check to see if there is a "Pageant" agent we can talk to.
-
-    This checks both if we have the required libraries (win32all or ctypes)
-    and if there is a Pageant currently running.
     """
-    if (_has_win32all or _has_ctypes) and _get_pageant_window_object():
-        return True
-    return False
+    return _get_pageant_window_object()
+
 
 ULONG_PTR = ctypes.c_uint64 if platform.architecture()[0] == '64bit' else ctypes.c_uint32
 class COPYDATASTRUCT(ctypes.Structure):
@@ -110,14 +96,12 @@ def _query_pageant(msg):
         # Create a string to use for the SendMessage function call
         cds = COPYDATASTRUCT(_AGENT_COPYDATA_ID, char_buffer_size, char_buffer_address)
 
-        if _has_win32all:
+        if win32gui is not None:
             # win32gui.SendMessage should also allow the same pattern as
             # ctypes, but let's keep it like this for now...
             response = win32gui.SendMessage(hwnd, win32con_WM_COPYDATA, ctypes.sizeof(cds), ctypes.addressof(cds))
-        elif _has_ctypes:
-            response = ctypes.windll.user32.SendMessageA(hwnd, win32con_WM_COPYDATA, ctypes.sizeof(cds), ctypes.byref(cds))
         else:
-            response = 0
+            response = ctypes.windll.user32.SendMessageA(hwnd, win32con_WM_COPYDATA, ctypes.sizeof(cds), ctypes.byref(cds))
 
         if response > 0:
             datalen = pymap.read(4)
