@@ -27,6 +27,7 @@ import threading
 import socket
 import os
 
+from Crypto.Util.py3compat import bchr as chr
 from ssh.common import *
 from ssh import util
 from ssh.message import Message

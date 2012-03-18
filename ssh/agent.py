@@ -30,6 +30,7 @@ import tempfile
 import stat
 from select import select
 
+from Crypto.Util.py3compat import bord as ord, bchr as chr
 from ssh.ssh_exception import SSHException
 from ssh.message import Message
 from ssh.pkey import PKey
@@ -86,7 +87,7 @@ class AgentSSH(object):
         self._conn.send(struct.pack('>I', len(msg)) + msg)
         l = self._read_all(4)
         msg = Message(self._read_all(struct.unpack('>I', l)[0]))
-        return ord(msg.get_byte()), msg
+        return ord(msg.get_byte()[0]), msg
 
     def _read_all(self, wanted):
         result = self._conn.recv(wanted)

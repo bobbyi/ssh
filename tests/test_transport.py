@@ -29,6 +29,7 @@ import threading
 import unittest
 import random
 
+from Crypto.Util.py3compat import bchr as chr
 from ssh import Transport, SecurityOptions, ServerInterface, RSAKey, DSSKey, \
     SSHException, BadAuthenticationType, InteractiveQuery, ChannelException
 from ssh import AUTH_FAILED, AUTH_PARTIALLY_SUCCESSFUL, AUTH_SUCCESSFUL

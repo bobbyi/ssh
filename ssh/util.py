@@ -29,6 +29,7 @@ import struct
 import traceback
 import threading
 
+from Crypto.Util.py3compat import bord as ord
 from ssh.common import *
 from ssh.config import SSHConfig
 

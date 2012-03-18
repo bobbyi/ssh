@@ -22,6 +22,7 @@ Standard SSH key exchange ("kex" if you wanna sound cool).  Diffie-Hellman of
 """
 
 from Crypto.Hash import SHA
+from Crypto.Util.py3compat import bord as ord, bchr as chr
 
 from ssh.common import *
 from ssh import util

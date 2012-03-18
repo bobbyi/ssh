@@ -22,6 +22,7 @@ Some unit tests for the key exchange protocols.
 
 from binascii import hexlify
 import unittest
+from Crypto.Util.py3compat import bchr as chr
 import ssh.util
 from ssh.kex_group1 import KexGroup1
 from ssh.kex_gex import KexGex

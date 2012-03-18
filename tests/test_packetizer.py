@@ -24,6 +24,7 @@ import unittest
 from loop import LoopSocket
 from Crypto.Cipher import AES
 from Crypto.Hash import SHA, HMAC
+from Crypto.Util.py3compat import bchr as chr
 from ssh import Message, Packetizer, util
 
 class PacketizerTest (unittest.TestCase):

@@ -27,6 +27,7 @@ import struct
 import threading
 import time
 
+from Crypto.Util.py3compat import bord as ord, bchr as chr
 from ssh.common import *
 from ssh import util
 from ssh.ssh_exception import SSHException

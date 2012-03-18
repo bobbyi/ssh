@@ -23,6 +23,7 @@ Some unit tests for public/private key objects.
 from binascii import hexlify, unhexlify
 import StringIO
 import unittest
+from Crypto.Util.py3compat import bchr as chr
 from ssh import RSAKey, DSSKey, Message, util
 from ssh.common import rng
 

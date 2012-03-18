@@ -17,6 +17,7 @@
 # 51 Franklin Street, Suite 500, Boston, MA  02110-1335  USA.
 
 
+from Crypto.Util.py3compat import bord as ord, bchr as chr
 from ssh import util
 
 

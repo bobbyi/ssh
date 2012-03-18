@@ -50,6 +50,8 @@ from Crypto import Random
 from Crypto.Cipher import Blowfish, AES, DES3, ARC4
 from Crypto.Hash import SHA, MD5
 from Crypto.Util import Counter
+from Crypto.Util.py3compat import bord as ord, bchr as chr
+
 
 
 # for thread cleanup
@@ -854,7 +856,7 @@ class Transport (threading.Thread):
         m = Message()
         m.add_byte(chr(MSG_IGNORE))
         if bytes is None:
-            bytes = (ord(rng.read(1)) % 32) + 10
+            bytes = (ord(rng.read(1)[0]) % 32) + 10
         m.add_bytes(rng.read(bytes))
         self._send_user_message(m)
 

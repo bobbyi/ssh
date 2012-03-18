@@ -21,6 +21,7 @@ Utility functions for dealing with primes.
 """
 
 from Crypto.Util import number
+from Crypto.Util.py3compat import bord as ord, bchr as chr
 
 from ssh import util
 from ssh.ssh_exception import SSHException

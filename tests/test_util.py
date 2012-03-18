@@ -25,6 +25,7 @@ import cStringIO
 import os
 import unittest
 from Crypto.Hash import SHA
+from Crypto.Util.py3compat import bord as ord
 import ssh.util
 
 

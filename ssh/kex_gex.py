@@ -24,6 +24,7 @@ client side, and a B{lot} more on the server side.
 
 from Crypto.Hash import SHA
 from Crypto.Util import number
+from Crypto.Util.py3compat import bord as ord, bchr as chr
 
 from ssh.common import *
 from ssh import util

@@ -26,6 +26,7 @@ import weakref
 # this helps freezing utils
 import encodings.utf_8
 
+from Crypto.Util.py3compat import bchr as chr
 from ssh.common import *
 from ssh import util
 from ssh.message import Message
