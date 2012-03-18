@@ -73,23 +73,33 @@ class PKey (object):
         """
         return ''
 
-    def __cmp__(self, other):
+    def __eq__(self, other):
         """
-        Compare this key to another.  Returns 0 if this key is equivalent to
-        the given key, or non-0 if they are different.  Only the public parts
-        of the key are compared, so a public key will compare equal to its
-        corresponding private key.
+        Compare this key to another.  
+        Only the public parts of the key are compared, so a public key will 
+        compare equal to its corresponding private key.
 
         @param other: key to compare to.
         @type other: L{PKey}
-        @return: 0 if the two keys are equivalent, non-0 otherwise.
-        @rtype: int
+        @return: whether the two keys are equivalent.
+        @rtype: bool
         """
-        hs = hash(self)
-        ho = hash(other)
-        if hs != ho:
-            return cmp(hs, ho)
-        return cmp(str(self), str(other))
+        if hash(self) != hash(other):
+            return False
+        return bytes(self) == bytes(other)
+
+    def __ne__(self, other):
+        """
+        Compare this key to another.  
+        Only the public parts of the key are compared, so a public key will 
+        compare equal to its corresponding private key.
+
+        @param other: key to compare to.
+        @type other: L{PKey}
+        @return: whether the two keys are different.
+        @rtype: bool
+        """
+        return not self == other
 
     def get_name(self):
         """
