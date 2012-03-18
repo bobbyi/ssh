@@ -20,7 +20,7 @@
 Useful functions used by the rest of ssh.
 """
 
-from __future__ import generators
+
 
 from binascii import hexlify, unhexlify
 import sys
