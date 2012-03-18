@@ -102,7 +102,6 @@ rng = Random.new()
 
 import sys
 import logging
-PY22 = False
 
 
 DEBUG = logging.DEBUG
