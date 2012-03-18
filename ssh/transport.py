@@ -299,14 +299,7 @@ class Transport (threading.Thread):
         self.setDaemon(True)
         self.rng = rng
         self.sock = sock
-        # Python < 2.3 doesn't have the settimeout method - RogerB
-        try:
-            # we set the timeout so we can check self.active periodically to
-            # see if we should bail.  socket.timeout exception is never
-            # propagated.
-            self.sock.settimeout(0.1)
-        except AttributeError:
-            pass
+        self.sock.settimeout(0.1)
 
         # negotiated crypto parameters
         self.packetizer = Packetizer(sock)
