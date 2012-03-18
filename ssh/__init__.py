@@ -48,12 +48,6 @@ released under the GNU Lesser General Public License (LGPL).
 Website: U{http://www.lag.net/ssh/}
 """
 
-import sys
-
-if sys.version_info < (2, 2):
-    raise RuntimeError('You need python 2.2 for this module.')
-
-
 __author__ = "Jeff Forcier <jeff@bitprophet.org>"
 __version__ = "1.7.13"
 __license__ = "GNU Lesser General Public License (LGPL)"
