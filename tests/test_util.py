@@ -21,7 +21,7 @@ Some unit tests for utility functions.
 """
 
 from binascii import hexlify
-import cStringIO
+import io
 import os
 import unittest
 from Crypto.Hash import SHA
@@ -109,7 +109,7 @@ class UtilTest (unittest.TestCase):
 
     def test_2_parse_config(self):
         global test_config_file
-        f = cStringIO.StringIO(test_config_file)
+        f = io.BytesIO(test_config_file)
         config = ssh.util.parse_ssh_config(f)
         self.assertEquals(config._config,
                           [ {'identityfile': '~/.ssh/id_rsa', 'host': '*', 'user': 'robey',
@@ -119,7 +119,7 @@ class UtilTest (unittest.TestCase):
 
     def test_3_host_config(self):
         global test_config_file
-        f = cStringIO.StringIO(test_config_file)
+        f = io.BytesIO(test_config_file)
         config = ssh.util.parse_ssh_config(f)
         c = ssh.util.lookup_ssh_host_config('irc.danger.com', config)
         self.assertEquals(c, {'identityfile': '~/.ssh/id_rsa', 'user': 'robey', 'crazy': 'something dumb  '})

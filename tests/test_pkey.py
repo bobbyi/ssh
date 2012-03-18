@@ -21,7 +21,7 @@ Some unit tests for public/private key objects.
 """
 
 from binascii import hexlify, unhexlify
-import StringIO
+import io
 import unittest
 from Crypto.Util.py3compat import bchr as chr
 from ssh import RSAKey, DSSKey, Message, util
@@ -91,7 +91,7 @@ class KeyTest (unittest.TestCase):
         self.assertEquals(PUB_RSA.split()[1], key.get_base64())
         self.assertEquals(1024, key.get_bits())
 
-        s = StringIO.StringIO()
+        s = io.BytesIO()
         key.write_private_key(s)
         self.assertEquals(RSA_PRIVATE_OUT, s.getvalue()) 
         s.seek(0)
@@ -116,7 +116,7 @@ class KeyTest (unittest.TestCase):
         self.assertEquals(PUB_DSS.split()[1], key.get_base64())
         self.assertEquals(1024, key.get_bits())
 
-        s = StringIO.StringIO()
+        s = io.BytesIO()
         key.write_private_key(s)
         self.assertEquals(DSS_PRIVATE_OUT, s.getvalue())
         s.seek(0)

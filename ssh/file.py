@@ -20,7 +20,7 @@
 BufferedFile.
 """
 
-from cStringIO import StringIO
+from io import BytesIO
 
 
 class BufferedFile (object):
@@ -47,7 +47,7 @@ class BufferedFile (object):
         self.newlines = None
         self._flags = 0
         self._bufsize = self._DEFAULT_BUFSIZE
-        self._wbuffer = StringIO()
+        self._wbuffer = BytesIO()
         self._rbuffer = ''
         self._at_trailing_cr = False
         self._closed = False
@@ -89,7 +89,7 @@ class BufferedFile (object):
         buffering is not turned on.
         """
         self._write_all(self._wbuffer.getvalue())
-        self._wbuffer = StringIO()
+        self._wbuffer = BytesIO()
         return
 
     def next(self):
@@ -321,7 +321,7 @@ class BufferedFile (object):
                 wbuf = self._wbuffer.getvalue()
                 last_newline_pos += len(wbuf) - len(data)
                 self._write_all(wbuf[:last_newline_pos + 1])
-                self._wbuffer = StringIO()
+                self._wbuffer = BytesIO()
                 self._wbuffer.write(wbuf[last_newline_pos + 1:])
             return
         # even if we're line buffering, if the buffer has grown past the
