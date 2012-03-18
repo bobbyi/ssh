@@ -107,7 +107,7 @@ class SecurityOptions (object):
         if type(x) is not tuple:
             raise TypeError('expected tuple or list')
         possible = getattr(self._transport, orig).keys()
-        forbidden = filter(lambda n: n not in possible, x)
+        forbidden = [n for n in x if n not in possible]
         if len(forbidden) > 0:
             raise ValueError('unknown cipher')
         setattr(self._transport, name, x)
@@ -1696,8 +1696,8 @@ class Transport (threading.Thread):
                 pkex = list(self.get_security_options().kex)
                 pkex.remove('diffie-hellman-group-exchange-sha1')
                 self.get_security_options().kex = pkex
-            available_server_keys = filter(list(self.server_key_dict.keys()).__contains__,
-                                           self._preferred_keys)
+            available_server_keys = list(filter(list(self.server_key_dict.keys()).__contains__,
+                                           self._preferred_keys))
         else:
             available_server_keys = self._preferred_keys
 
@@ -1749,19 +1749,19 @@ class Transport (threading.Thread):
         # as a server, we pick the first item in the client's list that we support.
         # as a client, we pick the first item in our list that the server supports.
         if self.server_mode:
-            agreed_kex = filter(self._preferred_kex.__contains__, kex_algo_list)
+            agreed_kex = list(filter(self._preferred_kex.__contains__, kex_algo_list))
         else:
-            agreed_kex = filter(kex_algo_list.__contains__, self._preferred_kex)
+            agreed_kex = list(filter(kex_algo_list.__contains__, self._preferred_kex))
         if len(agreed_kex) == 0:
             raise SSHException('Incompatible ssh peer (no acceptable kex algorithm)')
         self.kex_engine = self._kex_info[agreed_kex[0]](self)
 
         if self.server_mode:
-            available_server_keys = filter(list(self.server_key_dict.keys()).__contains__,
-                                           self._preferred_keys)
-            agreed_keys = filter(available_server_keys.__contains__, server_key_algo_list)
+            available_server_keys = list(filter(list(self.server_key_dict.keys()).__contains__,
+                                           self._preferred_keys))
+            agreed_keys = list(filter(available_server_keys.__contains__, server_key_algo_list))
         else:
-            agreed_keys = filter(server_key_algo_list.__contains__, self._preferred_keys)
+            agreed_keys = list(filter(server_key_algo_list.__contains__, self._preferred_keys))
         if len(agreed_keys) == 0:
             raise SSHException('Incompatible ssh peer (no acceptable host key)')
         self.host_key_type = agreed_keys[0]
@@ -1769,15 +1769,15 @@ class Transport (threading.Thread):
             raise SSHException('Incompatible ssh peer (can\'t match requested host key type)')
 
         if self.server_mode:
-            agreed_local_ciphers = filter(self._preferred_ciphers.__contains__,
-                                           server_encrypt_algo_list)
-            agreed_remote_ciphers = filter(self._preferred_ciphers.__contains__,
-                                          client_encrypt_algo_list)
+            agreed_local_ciphers = list(filter(self._preferred_ciphers.__contains__,
+                                           server_encrypt_algo_list))
+            agreed_remote_ciphers = list(filter(self._preferred_ciphers.__contains__,
+                                          client_encrypt_algo_list))
         else:
-            agreed_local_ciphers = filter(client_encrypt_algo_list.__contains__,
-                                          self._preferred_ciphers)
-            agreed_remote_ciphers = filter(server_encrypt_algo_list.__contains__,
-                                           self._preferred_ciphers)
+            agreed_local_ciphers = list(filter(client_encrypt_algo_list.__contains__,
+                                          self._preferred_ciphers))
+            agreed_remote_ciphers = list(filter(server_encrypt_algo_list.__contains__,
+                                           self._preferred_ciphers))
         if (len(agreed_local_ciphers) == 0) or (len(agreed_remote_ciphers) == 0):
             raise SSHException('Incompatible ssh server (no acceptable ciphers)')
         self.local_cipher = agreed_local_ciphers[0]
@@ -1785,22 +1785,22 @@ class Transport (threading.Thread):
         self._log(DEBUG, 'Ciphers agreed: local=%s, remote=%s' % (self.local_cipher, self.remote_cipher))
 
         if self.server_mode:
-            agreed_remote_macs = filter(self._preferred_macs.__contains__, client_mac_algo_list)
-            agreed_local_macs = filter(self._preferred_macs.__contains__, server_mac_algo_list)
+            agreed_remote_macs = list(filter(self._preferred_macs.__contains__, client_mac_algo_list))
+            agreed_local_macs = list(filter(self._preferred_macs.__contains__, server_mac_algo_list))
         else:
-            agreed_local_macs = filter(client_mac_algo_list.__contains__, self._preferred_macs)
-            agreed_remote_macs = filter(server_mac_algo_list.__contains__, self._preferred_macs)
+            agreed_local_macs = list(filter(client_mac_algo_list.__contains__, self._preferred_macs))
+            agreed_remote_macs = list(filter(server_mac_algo_list.__contains__, self._preferred_macs))
         if (len(agreed_local_macs) == 0) or (len(agreed_remote_macs) == 0):
             raise SSHException('Incompatible ssh server (no acceptable macs)')
         self.local_mac = agreed_local_macs[0]
         self.remote_mac = agreed_remote_macs[0]
 
         if self.server_mode:
-            agreed_remote_compression = filter(self._preferred_compression.__contains__, client_compress_algo_list)
-            agreed_local_compression = filter(self._preferred_compression.__contains__, server_compress_algo_list)
+            agreed_remote_compression = list(filter(self._preferred_compression.__contains__, client_compress_algo_list))
+            agreed_local_compression = list(filter(self._preferred_compression.__contains__, server_compress_algo_list))
         else:
-            agreed_local_compression = filter(client_compress_algo_list.__contains__, self._preferred_compression)
-            agreed_remote_compression = filter(server_compress_algo_list.__contains__, self._preferred_compression)
+            agreed_local_compression = list(filter(client_compress_algo_list.__contains__, self._preferred_compression))
+            agreed_remote_compression = list(filter(server_compress_algo_list.__contains__, self._preferred_compression))
         if (len(agreed_local_compression) == 0) or (len(agreed_remote_compression) == 0):
             raise SSHException('Incompatible ssh server (no acceptable compression) %r %r %r' % (agreed_local_compression, agreed_remote_compression, self._preferred_compression))
         self.local_compression = agreed_local_compression[0]
