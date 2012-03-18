@@ -679,17 +679,17 @@ class Transport (threading.Thread):
         """
         return self.open_channel('auth-agent@openssh.com')
 
-    def open_forwarded_tcpip_channel(self, (src_addr, src_port), (dest_addr, dest_port)):
+    def open_forwarded_tcpip_channel(self, src, dest):
         """
         Request a new channel back to the client, of type C{"forwarded-tcpip"}.
         This is used after a client has requested port forwarding, for sending
         incoming connections back to the client.
 
-        @param src_addr: originator's address
-        @param src_port: originator's port
-        @param dest_addr: local (server) connected address
-        @param dest_port: local (server) connected port
+        @param src: tuple of originator's address and port
+        @param dest: tuple of local (server) connected address and port
         """
+        (src_addr, src_port) = src
+        (dest_addr, dest_port) = dest
         return self.open_channel('forwarded-tcpip', (dest_addr, dest_port), (src_addr, src_port))
 
     def open_channel(self, kind, dest_addr=None, src_addr=None):
@@ -799,7 +799,9 @@ class Transport (threading.Thread):
         if port == 0:
             port = response.get_int()
         if handler is None:
-            def default_handler(channel, (src_addr, src_port), (dest_addr, dest_port)):
+            def default_handler(channel, src, dest):
+                (src_addr, src_port) = src
+                (dest_addr, dest_port) = dest
                 self._queue_incoming_channel(channel)
             handler = default_handler
         self._tcp_handler = handler
@@ -1499,7 +1501,8 @@ class Transport (threading.Thread):
         # only called if a channel has turned on x11 forwarding
         if handler is None:
             # by default, use the same mechanism as accept()
-            def default_handler(channel, (src_addr, src_port)):
+            def default_handler(channel, src):
+                (src_addr, src_port) = src
                 self._queue_incoming_channel(channel)
             self._x11_handler = default_handler
         else:

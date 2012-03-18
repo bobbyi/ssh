@@ -448,7 +448,8 @@ class TransportTest (unittest.TestCase):
         schan = self.ts.accept(1.0)
         
         requested = []
-        def handler(c, (addr, port)):
+        def handler(c, src):
+            (addr, port) = src
             requested.append((addr, port))
             self.tc._queue_incoming_channel(c)
             
@@ -483,7 +484,9 @@ class TransportTest (unittest.TestCase):
         schan = self.ts.accept(1.0)
         
         requested = []
-        def handler(c, (origin_addr, origin_port), (server_addr, server_port)):
+        def handler(c, src, dest):
+            (origin_addr, origin_port) = src
+            (server_addr, server_port) = dest
             requested.append((origin_addr, origin_port))
             requested.append((server_addr, server_port))
             self.tc._queue_incoming_channel(c)
