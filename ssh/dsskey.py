@@ -64,7 +64,7 @@ class DSSKey (PKey):
             self.y = msg.get_mpint()
         self.size = util.bit_length(self.p)
 
-    def __str__(self):
+    def __bytes__(self):
         m = Message()
         m.add_string('ssh-dss')
         m.add_mpint(self.p)

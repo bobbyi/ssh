@@ -35,10 +35,13 @@ class FakeRng (object):
 
 
 class FakeKey (object):
+    def __bytes__(self):
+        return b'fake-key'
     def __str__(self):
-        return 'fake-key'
+        assert str == bytes, "Tried to call str() instead of bytes() on key"
+        return self.__bytes__()
     def sign_ssh_data(self, rng, H):
-        return 'fake-sig'
+        return b'fake-sig'
 
 
 class FakeModulusPack (object):

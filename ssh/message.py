@@ -50,7 +50,7 @@ class Message (object):
         else:
             self.packet = io.BytesIO()
 
-    def __str__(self):
+    def __bytes__(self):
         """
         Return the byte stream content of this Message, as a string.
 
@@ -58,6 +58,12 @@ class Message (object):
         @rtype: string
         """
         return self.packet.getvalue()
+
+    def __str__(self):
+        if str == bytes: # Python 2.x
+            return self.__bytes__()
+        else:
+            return super().__str__()
 
     def __repr__(self):
         """

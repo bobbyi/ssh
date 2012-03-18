@@ -334,7 +334,7 @@ class AgentKey(PKey):
         self.blob = blob
         self.name = Message(blob).get_string()
 
-    def __str__(self):
+    def __bytes__(self):
         return self.blob
 
     def get_name(self):

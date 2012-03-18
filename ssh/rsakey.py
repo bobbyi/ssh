@@ -63,7 +63,7 @@ class RSAKey (PKey):
             self.n = msg.get_mpint()
         self.size = util.bit_length(self.n)
 
-    def __str__(self):
+    def __bytes__(self):
         m = Message()
         m.add_string('ssh-rsa')
         m.add_mpint(self.e)

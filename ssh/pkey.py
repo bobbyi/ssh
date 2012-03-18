@@ -62,7 +62,7 @@ class PKey (object):
         C{msg} given, or no key was passed in.
         """
 
-    def __str__(self):
+    def __bytes__(self):
         """
         Return a string of an SSH L{Message} made up of the public part(s) of
         this key.  This string is suitable for passing to L{__init__} to
@@ -72,6 +72,12 @@ class PKey (object):
         @rtype: str
         """
         return ''
+
+    def __str__(self):
+        if str == bytes: # Python 2.x
+            return self.__bytes__()
+        else:
+            return super().__str__()
 
     def __eq__(self, other):
         """

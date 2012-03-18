@@ -174,7 +174,7 @@ class SFTPAttributes (object):
             out += '-xSs'[suid + (n & 1)]
         return out
 
-    def __str__(self):
+    def __bytes__(self):
         "create a unix-style long description of the file (like ls -l)"
         if self.st_mode is not None:
             kind = stat.S_IFMT(self.st_mode)
@@ -220,4 +220,10 @@ class SFTPAttributes (object):
             gid = 0
 
         return '%s   1 %-8d %-8d %8d %-12s %s' % (ks, uid, gid, self.st_size, datestr, filename)
+
+    def __str__(self):
+        if str == bytes: # Python 2.x
+            return self.__bytes__()
+        else:
+            return super().__str__()
 

@@ -34,8 +34,14 @@ class BER(object):
         self.content = content
         self.idx = 0
 
-    def __str__(self):
+    def __bytes__(self):
         return self.content
+
+    def __str__(self):
+        if str == bytes: # Python 2.x
+            return self.__bytes__()
+        else:
+            return super().__str__()
 
     def __repr__(self):
         return 'BER(\'' + repr(self.content) + '\')'
