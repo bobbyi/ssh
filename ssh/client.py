@@ -188,8 +188,8 @@ class SSHClient (object):
         """
         f = open(filename, 'w')
         f.write('# SSH host keys collected by ssh\n')
-        for hostname, keys in self._host_keys.iteritems():
-            for keytype, key in keys.iteritems():
+        for hostname, keys in self._host_keys.items():
+            for keytype, key in keys.items():
                 f.write('%s %s %s\n' % (hostname, keytype, key.get_base64()))
         f.close()
 

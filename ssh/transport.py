@@ -172,7 +172,7 @@ class ChannelMap (object):
     def values(self):
         self._lock.acquire()
         try:
-            return self._map.values()
+            return list(self._map.values())
         finally:
             self._lock.release()
 
@@ -1697,7 +1697,7 @@ class Transport (threading.Thread):
                 pkex = list(self.get_security_options().kex)
                 pkex.remove('diffie-hellman-group-exchange-sha1')
                 self.get_security_options().kex = pkex
-            available_server_keys = filter(self.server_key_dict.keys().__contains__,
+            available_server_keys = filter(list(self.server_key_dict.keys()).__contains__,
                                            self._preferred_keys)
         else:
             available_server_keys = self._preferred_keys
@@ -1758,7 +1758,7 @@ class Transport (threading.Thread):
         self.kex_engine = self._kex_info[agreed_kex[0]](self)
 
         if self.server_mode:
-            available_server_keys = filter(self.server_key_dict.keys().__contains__,
+            available_server_keys = filter(list(self.server_key_dict.keys()).__contains__,
                                            self._preferred_keys)
             agreed_keys = filter(available_server_keys.__contains__, server_key_algo_list)
         else:
