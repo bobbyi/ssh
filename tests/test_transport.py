@@ -651,7 +651,7 @@ class TransportTest (unittest.TestCase):
 
         class SendThread(threading.Thread):
             def __init__(self, chan, iterations, done_event):
-                threading.Thread.__init__(self, None, None, self.__class__.__name__)
+                super(SendThread, self).__init__(None, None, self.__class__.__name__)
                 self.setDaemon(True)
                 self.chan = chan
                 self.iterations = iterations
@@ -672,7 +672,7 @@ class TransportTest (unittest.TestCase):
         
         class ReceiveThread(threading.Thread):
             def __init__(self, chan, done_event):
-                threading.Thread.__init__(self, None, None, self.__class__.__name__)
+                super(ReceiveThread, self).__init__(None, None, self.__class__.__name__)
                 self.setDaemon(True)
                 self.chan = chan
                 self.done_event = done_event

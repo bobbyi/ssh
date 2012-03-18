@@ -295,7 +295,7 @@ class Transport (threading.Thread):
                 raise SSHException(
                     'Unable to connect to %s: %s' % (hostname, reason))
         # okay, normal socket-ish flow here...
-        threading.Thread.__init__(self)
+        super(Transport, self).__init__()
         self.setDaemon(True)
         self.rng = rng
         self.sock = sock

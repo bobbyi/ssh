@@ -103,7 +103,7 @@ class AgentSSH(object):
 class AgentProxyThread(threading.Thread):
     """ Class in charge of communication between two chan """
     def __init__(self, agent):
-        threading.Thread.__init__(self, target=self.run)
+        super(AgentProxyThread, self).__init__(target=self.run)
         self._agent = agent
         self._exit = False
 
@@ -140,9 +140,6 @@ class AgentLocalProxy(AgentProxyThread):
     Class to be used when wanting to ask a local SSH Agent being
     asked from a remote fake agent (so use a unix socket for ex.)
     """
-    def __init__(self, agent):
-        AgentProxyThread.__init__(self, agent)
-
     def get_connection(self):
         """ Return a pair of socket object and string address
         May Block !
@@ -162,7 +159,7 @@ class AgentRemoteProxy(AgentProxyThread):
     Class to be used when wanting to ask a remote SSH Agent
     """
     def __init__(self, agent, chan):
-        AgentProxyThread.__init__(self, agent)
+        super(AgentRemoteProxy, self).__init__(agent)
         self.__chan = chan
 
     def get_connection(self):
@@ -235,7 +232,7 @@ class AgentServerProxy(AgentSSH):
     @raise SSHException: mostly if we lost the agent
     """
     def __init__(self, t):
-        AgentSSH.__init__(self)
+        super(AgentServerProxy, self).__init__()
         self.__t = t
         self._dir = tempfile.mkdtemp('sshproxy')
         os.chmod(self._dir, stat.S_IRWXU)
@@ -299,7 +296,7 @@ class Agent(AgentSSH):
         @raise SSHException: if an SSH agent is found, but speaks an
             incompatible protocol
         """
-        AgentSSH.__init__(self)
+        super(Agent, self).__init__()
 
         if ('SSH_AUTH_SOCK' in os.environ) and (sys.platform != 'win32'):
             conn = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)

@@ -29,7 +29,7 @@ class LoopbackFile (BufferedFile):
     BufferedFile object that you can write data into, and then read it back.
     """
     def __init__(self, mode='r', bufsize=-1):
-        BufferedFile.__init__(self)
+        super(LoopbackFile, self).__init__()
         self._set_mode(mode, bufsize)
         self.buffer = ''
 

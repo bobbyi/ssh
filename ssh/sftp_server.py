@@ -64,8 +64,7 @@ class SFTPServer (BaseSFTP, SubsystemHandler):
             individual requests.
         @type sftp_si: class
         """
-        BaseSFTP.__init__(self)
-        SubsystemHandler.__init__(self, channel, name, server)
+        super(SFTPServer, self).__init__(channel=channel, name=name, server=server)
         transport = channel.get_transport()
         self.logger = util.get_logger(transport.get_log_channel() + '.sftp')
         self.ultra_debug = transport.get_hexdump()

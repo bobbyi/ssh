@@ -95,7 +95,8 @@ class SFTPError (Exception):
 
 
 class BaseSFTP (object):
-    def __init__(self):
+    def __init__(self, **kw):
+        super(BaseSFTP, self).__init__(**kw)
         self.logger = util.get_logger('ssh.sftp')
         self.sock = None
         self.ultra_debug = False

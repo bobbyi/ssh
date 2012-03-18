@@ -69,7 +69,7 @@ class SFTPClient (BaseSFTP):
         @raise SSHException: if there's an exception while negotiating
             sftp
         """
-        BaseSFTP.__init__(self)
+        super(SFTPClient, self).__init__()
         self.sock = sock
         self.ultra_debug = False
         self.request_number = 1

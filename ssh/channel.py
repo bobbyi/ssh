@@ -1230,7 +1230,7 @@ class ChannelFile (BufferedFile):
 
     def __init__(self, channel, mode = 'r', bufsize = -1):
         self.channel = channel
-        BufferedFile.__init__(self)
+        super(ChannelFile, self).__init__()
         self._set_mode(mode, bufsize)
 
     def __repr__(self):
@@ -1251,7 +1251,7 @@ class ChannelFile (BufferedFile):
 
 class ChannelStderrFile (ChannelFile):
     def __init__(self, channel, mode = 'r', bufsize = -1):
-        ChannelFile.__init__(self, channel, mode, bufsize)
+        super(ChannelStderrFile, self).__init__(channel, mode, bufsize)
 
     def _read(self, size):
         return self.channel.recv_stderr(size)

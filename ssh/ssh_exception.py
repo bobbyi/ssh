@@ -25,7 +25,6 @@ class SSHException (Exception):
     """
     Exception raised by failures in SSH2 protocol negotiation or logic errors.
     """
-    pass
 
 
 class AuthenticationException (SSHException):
@@ -36,14 +35,12 @@ class AuthenticationException (SSHException):
     
     @since: 1.6
     """
-    pass
     
 
 class PasswordRequiredException (AuthenticationException):
     """
     Exception raised when a password is needed to unlock a private key file.
     """
-    pass
 
 
 class BadAuthenticationType (AuthenticationException):
@@ -62,7 +59,7 @@ class BadAuthenticationType (AuthenticationException):
     allowed_types = []
     
     def __init__(self, explanation, types):
-        AuthenticationException.__init__(self, explanation)
+        super(BadAuthenticationType, self).__init__(explanation)
         self.allowed_types = types
      
     def __str__(self):
@@ -76,7 +73,7 @@ class PartialAuthentication (AuthenticationException):
     allowed_types = []
     
     def __init__(self, types):
-        AuthenticationException.__init__(self, 'partial authentication')
+        super(PartialAuthentication, self).__init__('partial authentication')
         self.allowed_types = types
 
 
@@ -90,7 +87,7 @@ class ChannelException (SSHException):
     @since: 1.6
     """
     def __init__(self, code, text):
-        SSHException.__init__(self, text)
+        super(ChannelException, self).__init__(text)
         self.code = code
 
 
@@ -108,7 +105,7 @@ class BadHostKeyException (SSHException):
     @since: 1.6
     """
     def __init__(self, hostname, got_key, expected_key):
-        SSHException.__init__(self, 'Host key for server %s does not match!' % hostname)
+        super(BadHostKeyException, self).__init__('Host key for server %s does not match!' % hostname)
         self.hostname = hostname
         self.key = got_key
         self.expected_key = expected_key

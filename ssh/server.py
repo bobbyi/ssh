@@ -567,7 +567,7 @@ class SubsystemHandler (threading.Thread):
     C{MP3Handler} will be created, and L{start_subsystem} will be called on
     it from a new thread.
     """
-    def __init__(self, channel, name, server):
+    def __init__(self, channel, name, server, **kw):
         """
         Create a new handler for a channel.  This is used by L{ServerInterface}
         to start up a new handler when a channel requests this subsystem.  You
@@ -583,7 +583,7 @@ class SubsystemHandler (threading.Thread):
             subsystem
         @type server: L{ServerInterface}
         """
-        threading.Thread.__init__(self, target=self._run)
+        super(SubsystemHandler, self).__init__(target=self._run)
         self.__channel = channel
         self.__transport = channel.get_transport()
         self.__name = name
@@ -636,7 +636,6 @@ class SubsystemHandler (threading.Thread):
         @param channel: the channel associated with this subsystem request.
         @type channel: L{Channel}
         """
-        pass
 
     def finish_subsystem(self):
         """
