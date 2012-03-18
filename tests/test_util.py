@@ -59,16 +59,6 @@ from ssh import *
 
 
 class UtilTest (unittest.TestCase):
-
-    assertTrue = unittest.TestCase.failUnless   # for Python 2.3 and below
-    assertFalse = unittest.TestCase.failIf      # for Python 2.3 and below
-
-    def setUp(self):
-        pass
-
-    def tearDown(self):
-        pass
-    
     def test_1_import(self):
         """
         verify that all the classes can be imported from ssh.
