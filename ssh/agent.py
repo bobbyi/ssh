@@ -108,15 +108,11 @@ class AgentProxyThread(threading.Thread):
         self._exit = False
 
     def run(self):
-        try:
-            (r,addr) = self.get_connection()
-            self.__inr = r
-            self.__addr = addr
-            self._agent.connect()
-            self._communicate()
-        except:
-            #XXX Not sure what to do here ... raise or pass ?
-            raise
+        (r,addr) = self.get_connection()
+        self.__inr = r
+        self.__addr = addr
+        self._agent.connect()
+        self._communicate()
 
     def _communicate(self):
         import fcntl
