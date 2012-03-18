@@ -409,7 +409,7 @@ class TransportTest (unittest.TestCase):
         chan.close()
         
         # allow a few seconds for the rekeying to complete
-        for i in xrange(50):
+        for i in range(50):
             if self.tc.H != self.tc.session_id:
                 break
             time.sleep(0.1)
@@ -661,7 +661,7 @@ class TransportTest (unittest.TestCase):
             
             def run(self):
                 try:
-                    for i in xrange(1, 1+self.iterations):
+                    for i in range(1, 1+self.iterations):
                         if self.done_event.isSet():
                             break
                         self.watchdog_event.set()

@@ -140,7 +140,7 @@ class SFTPTest (unittest.TestCase):
 
     def setUp(self):
         global FOLDER
-        for i in xrange(1000):
+        for i in range(1000):
             FOLDER = FOLDER[:-3] + '%03d' % i
             try:
                 sftp.mkdir(FOLDER)
