@@ -181,13 +181,13 @@ class SFTPServer (BaseSFTP, SubsystemHandler):
                 msg.add_int64(item)
             elif isinstance(item, int):
                 msg.add_int(item)
-            elif isinstance(item, str):
+            elif isinstance(item, bytes):
                 msg.add_string(item)
             elif isinstance(item, SFTPAttributes):
                 item._pack(msg)
             else:
                 raise TypeError('unknown type for ' + repr(item) + ' type ' + repr(type(item)))
-        self._send_packet(t, str(msg))
+        self._send_packet(t, bytes(msg))
 
     def _send_handle_response(self, request_number, handle, folder=False):
         if not issubclass(type(handle), SFTPHandle):
@@ -232,9 +232,9 @@ class SFTPServer (BaseSFTP, SubsystemHandler):
         msg.add_int(len(flist))
         for attr in flist:
             msg.add_string(attr.filename)
-            msg.add_string(str(attr))
+            msg.add_string(bytes(attr))
             attr._pack(msg)
-        self._send_packet(CMD_NAME, str(msg))
+        self._send_packet(CMD_NAME, bytes(msg))
 
     def _check_file(self, request_number, msg):
         # this extension actually comes from v6 protocol, but since it's an
@@ -280,7 +280,7 @@ class SFTPServer (BaseSFTP, SubsystemHandler):
             hash_obj = alg.new()
             while count < blocklen:
                 data = f.read(offset, chunklen)
-                if not isinstance(data, str):
+                if not isinstance(data, bytes):
                     self._send_status(request_number, data, 'Unable to hash file')
                     return
                 hash_obj.update(data)
@@ -293,7 +293,7 @@ class SFTPServer (BaseSFTP, SubsystemHandler):
         msg.add_string('check-file')
         msg.add_string(algname)
         msg.add_bytes(sum_out)
-        self._send_packet(CMD_EXTENDED_REPLY, str(msg))
+        self._send_packet(CMD_EXTENDED_REPLY, bytes(msg))
     
     def _convert_pflags(self, pflags):
         "convert SFTP-style open() flags to python's os.open() flags"
@@ -340,7 +340,7 @@ class SFTPServer (BaseSFTP, SubsystemHandler):
                 self._send_status(request_number, SFTP_BAD_MESSAGE, 'Invalid handle')
                 return
             data = self.file_table[handle].read(offset, length)
-            if isinstance(data, str):
+            if isinstance(data, bytes):
                 if len(data) == 0:
                     self._send_status(request_number, SFTP_EOF)
                 else:
@@ -418,7 +418,7 @@ class SFTPServer (BaseSFTP, SubsystemHandler):
         elif t == CMD_READLINK:
             path = msg.get_string()
             resp = self.server.readlink(path)
-            if isinstance(resp, str):
+            if isinstance(resp, bytes):
                 self._response(request_number, CMD_NAME, 1, resp, '', SFTPAttributes())
             else:
                 self._send_status(request_number, resp)

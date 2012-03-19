@@ -88,7 +88,7 @@ class SSHClientTest (unittest.TestCase):
         verify that the SSHClient stuff works too.
         """
         host_key = ssh.RSAKey.from_private_key_file('tests/test_rsa.key')
-        public_host_key = ssh.RSAKey(data=str(host_key))
+        public_host_key = ssh.RSAKey(data=bytes(host_key))
 
         self.tc = ssh.SSHClient()
         self.tc.get_host_keys().add('[%s]:%d' % (self.addr, self.port), 'ssh-rsa', public_host_key)
@@ -121,7 +121,7 @@ class SSHClientTest (unittest.TestCase):
         verify that SSHClient works with a DSA key.
         """
         host_key = ssh.RSAKey.from_private_key_file('tests/test_rsa.key')
-        public_host_key = ssh.RSAKey(data=str(host_key))
+        public_host_key = ssh.RSAKey(data=bytes(host_key))
 
         self.tc = ssh.SSHClient()
         self.tc.get_host_keys().add('[%s]:%d' % (self.addr, self.port), 'ssh-rsa', public_host_key)
@@ -154,7 +154,7 @@ class SSHClientTest (unittest.TestCase):
         verify that SSHClient accepts and tries multiple key files.
         """
         host_key = ssh.RSAKey.from_private_key_file('tests/test_rsa.key')
-        public_host_key = ssh.RSAKey(data=str(host_key))
+        public_host_key = ssh.RSAKey(data=bytes(host_key))
 
         self.tc = ssh.SSHClient()
         self.tc.get_host_keys().add('[%s]:%d' % (self.addr, self.port), 'ssh-rsa', public_host_key)
@@ -171,7 +171,7 @@ class SSHClientTest (unittest.TestCase):
         verify that SSHClient's AutoAddPolicy works.
         """
         host_key = ssh.RSAKey.from_private_key_file('tests/test_rsa.key')
-        public_host_key = ssh.RSAKey(data=str(host_key))
+        public_host_key = ssh.RSAKey(data=bytes(host_key))
 
         self.tc = ssh.SSHClient()
         self.tc.set_missing_host_key_policy(ssh.AutoAddPolicy())
@@ -192,7 +192,7 @@ class SSHClientTest (unittest.TestCase):
         transport's packetizer) is closed.
         """
         host_key = ssh.RSAKey.from_private_key_file('tests/test_rsa.key')
-        public_host_key = ssh.RSAKey(data=str(host_key))
+        public_host_key = ssh.RSAKey(data=bytes(host_key))
 
         self.tc = ssh.SSHClient()
         self.tc.set_missing_host_key_policy(ssh.AutoAddPolicy())

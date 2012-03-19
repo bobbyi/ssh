@@ -83,7 +83,7 @@ class AgentSSH(object):
         self._keys = ()
 
     def _send_message(self, msg):
-        msg = str(msg)
+        msg = bytes(msg)
         self._conn.send(struct.pack('>I', len(msg)) + msg)
         l = self._read_all(4)
         msg = Message(self._read_all(struct.unpack('>I', l)[0]))

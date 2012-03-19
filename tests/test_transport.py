@@ -126,7 +126,7 @@ class TransportTest (unittest.TestCase):
 
     def setup_test_server(self, client_options=None, server_options=None):
         host_key = RSAKey.from_private_key_file('tests/test_rsa.key')
-        public_host_key = RSAKey(data=str(host_key))
+        public_host_key = RSAKey(data=bytes(host_key))
         self.ts.add_server_key(host_key)
         
         if client_options is not None:
@@ -176,7 +176,7 @@ class TransportTest (unittest.TestCase):
         later tests. :)
         """
         host_key = RSAKey.from_private_key_file('tests/test_rsa.key')
-        public_host_key = RSAKey(data=str(host_key))
+        public_host_key = RSAKey(data=bytes(host_key))
         self.ts.add_server_key(host_key)
         event = threading.Event()
         server = NullServer()
@@ -201,7 +201,7 @@ class TransportTest (unittest.TestCase):
         verify that a long banner doesn't mess up the handshake.
         """
         host_key = RSAKey.from_private_key_file('tests/test_rsa.key')
-        public_host_key = RSAKey(data=str(host_key))
+        public_host_key = RSAKey(data=bytes(host_key))
         self.ts.add_server_key(host_key)
         event = threading.Event()
         server = NullServer()

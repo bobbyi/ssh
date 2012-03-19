@@ -281,7 +281,7 @@ class Message (object):
         return self
         
     def _add(self, i):
-        if isinstance(i, str):
+        if isinstance(i, bytes):
             return self.add_string(i)
         elif isinstance(i, bool):
             return self.add_boolean(i)
@@ -293,7 +293,7 @@ class Message (object):
         elif isinstance(i, list):
             return self.add_list(i)
         else:
-            raise TypeError('Unknown type')
+            raise TypeError('Unknown type: %s' % type(i))
 
     def add(self, *seq):
         """

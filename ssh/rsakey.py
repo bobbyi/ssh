@@ -73,7 +73,7 @@ class RSAKey (PKey):
         m.add_string('ssh-rsa')
         m.add_mpint(self.e)
         m.add_mpint(self.n)
-        return str(m)
+        return bytes(m)
 
     def __hash__(self):
         h = hash(self.get_name())
@@ -121,7 +121,7 @@ class RSAKey (PKey):
             b.encode(keylist)
         except BERException:
             raise SSHException('Unable to create ber encoding of key')
-        return str(b)
+        return bytes(b)
 
     def write_private_key_file(self, filename, password=None):
         self._write_private_key_file('RSA', filename, self._encode_key(), password)

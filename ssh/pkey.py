@@ -146,7 +146,7 @@ class PKey (object):
             format.
         @rtype: str
         """
-        return MD5.new(str(self)).digest()
+        return MD5.new(bytes(self)).digest()
 
     def get_base64(self):
         """
@@ -157,7 +157,7 @@ class PKey (object):
         @return: a base64 string containing the public part of the key.
         @rtype: str
         """
-        return base64.encodestring(str(self)).replace('\n', '')
+        return base64.encodestring(bytes(self)).replace('\n', '')
 
     def sign_ssh_data(self, rng, data):
         """

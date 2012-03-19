@@ -999,7 +999,7 @@ class Transport (threading.Thread):
         # check host key if we were given one
         if (hostkey is not None):
             key = self.get_remote_server_key()
-            if (key.get_name() != hostkey.get_name()) or (str(key) != str(hostkey)):
+            if (key.get_name() != hostkey.get_name()) or (bytes(key) != bytes(hostkey)):
                 self._log(DEBUG, 'Bad host key from server')
                 self._log(DEBUG, 'Expected: %s: %s' % (hostkey.get_name(), repr(str(hostkey))))
                 self._log(DEBUG, 'Got     : %s: %s' % (key.get_name(), repr(str(key))))
@@ -1461,13 +1461,13 @@ class Transport (threading.Thread):
         m.add_bytes(self.H)
         m.add_byte(id)
         m.add_bytes(self.session_id)
-        out = sofar = SHA.new(str(m)).digest()
+        out = sofar = SHA.new(bytes(m)).digest()
         while len(out) < nbytes:
             m = Message()
             m.add_mpint(self.K)
             m.add_bytes(self.H)
             m.add_bytes(sofar)
-            digest = SHA.new(str(m)).digest()
+            digest = SHA.new(bytes(m)).digest()
             out += digest
             sofar += digest
         return out[:nbytes]
@@ -1713,7 +1713,7 @@ class Transport (threading.Thread):
         m.add_boolean(False)
         m.add_int(0)
         # save a copy for later (needed to compute a hash)
-        self.local_kex_init = str(m)
+        self.local_kex_init = bytes(m)
         self._send_message(m)
 
     def _parse_kex_init(self, m):

@@ -126,7 +126,7 @@ class BER(object):
                 self.encode_tlv(1, '\x00')
         elif isinstance(x, (int, long)):
             self.encode_tlv(2, util.deflate_long(x))
-        elif isinstance(x, str):
+        elif isinstance(x, bytes):
             self.encode_tlv(4, x)
         elif (isinstance(x, list)) or (isinstance(x, tuple)):
             self.encode_tlv(0x30, self.encode_sequence(x))
@@ -138,4 +138,4 @@ class BER(object):
         b = BER()
         for item in data:
             b.encode(item)
-        return str(b)
+        return bytes(b)

@@ -111,7 +111,7 @@ class AuthTest (unittest.TestCase):
     
     def start_server(self):
         host_key = RSAKey.from_private_key_file('tests/test_rsa.key')
-        self.public_host_key = RSAKey(data=str(host_key))
+        self.public_host_key = RSAKey(data=bytes(host_key))
         self.ts.add_server_key(host_key)
         self.event = threading.Event()
         self.server = NullServer()

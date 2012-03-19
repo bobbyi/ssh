@@ -151,8 +151,8 @@ class AuthHandler (object):
         m.add_string('publickey')
         m.add_boolean(1)
         m.add_string(key.get_name())
-        m.add_string(str(key))
-        return str(m)
+        m.add_string(bytes(key))
+        return bytes(m)
 
     def wait_for_response(self, event):
         while True:
@@ -205,10 +205,10 @@ class AuthHandler (object):
             elif self.auth_method == 'publickey':
                 m.add_boolean(True)
                 m.add_string(self.private_key.get_name())
-                m.add_string(str(self.private_key))
+                m.add_string(bytes(self.private_key))
                 blob = self._get_session_blob(self.private_key, 'ssh-connection', self.username)
                 sig = self.private_key.sign_ssh_data(self.transport.rng, blob)
-                m.add_string(str(sig))
+                m.add_string(bytes(sig))
             elif self.auth_method == 'keyboard-interactive':
                 m.add_string('')
                 m.add_string(self.submethods)

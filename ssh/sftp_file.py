@@ -160,7 +160,7 @@ class SFTPFile (BufferedFile):
     def _write(self, data):
         # may write less than requested if it would exceed max packet size
         chunk = min(len(data), self.MAX_REQUEST_SIZE)
-        req = self.sftp._async_request(type(None), CMD_WRITE, self.handle, Int64(self._realpos), str(data[:chunk]))
+        req = self.sftp._async_request(type(None), CMD_WRITE, self.handle, Int64(self._realpos), bytes(data[:chunk]))
         if not self.pipelined or self.sftp.sock.recv_ready():
             t, msg = self.sftp._read_response(req)
             if t != CMD_STATUS:

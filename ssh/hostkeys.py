@@ -258,7 +258,7 @@ class HostKeys (MutableMapping):
         host_key = k.get(key.get_name(), None)
         if host_key is None:
             return False
-        return str(host_key) == str(key)
+        return bytes(host_key) == bytes(key)
 
     def clear(self):
         """
