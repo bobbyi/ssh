@@ -29,7 +29,7 @@ from ssh.dsskey import DSSKey
 from ssh.rsakey import RSAKey
 
 
-class HostKeyEntry:
+class HostKeyEntry(object):
     """
     Representation of a line in an OpenSSH-style "known hosts" file.
     """
