@@ -20,6 +20,8 @@
 L{RSAKey}
 """
 
+import sys
+
 from Crypto.PublicKey import RSA
 from Crypto.Hash import SHA, MD5
 from Crypto.Cipher import DES3
@@ -30,6 +32,9 @@ from ssh.message import Message
 from ssh.ber import BER, BERException
 from ssh.pkey import PKey
 from ssh.ssh_exception import SSHException
+
+if sys.version > '3':
+    long = int
 
 
 class RSAKey (PKey):
@@ -87,7 +92,7 @@ class RSAKey (PKey):
 
     def sign_ssh_data(self, rpool, data):
         digest = SHA.new(data).digest()
-        rsa = RSA.construct((self.n, self.e, self.d))
+        rsa = RSA.construct((long(self.n), long(self.e), self.d))
         sig = util.deflate_long(rsa.sign(self._pkcs1imify(digest), '')[0], 0)
         m = Message()
         m.add_string('ssh-rsa')
@@ -102,7 +107,7 @@ class RSAKey (PKey):
         # public key.  some wackiness ensues where we "pkcs1imify" the 20-byte
         # hash into a string as long as the RSA key.
         hash_obj = util.inflate_long(self._pkcs1imify(SHA.new(data).digest()), True)
-        rsa = RSA.construct((self.n, self.e))
+        rsa = RSA.construct((long(self.n), long(self.e)))
         return rsa.verify(hash_obj, (sig,))
 
     def _encode_key(self):
