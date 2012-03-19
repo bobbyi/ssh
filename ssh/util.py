@@ -54,7 +54,7 @@ def deflate_long(n, add_sign_padding=True):
     "turns a long-int into a normalized byte string (adapted from Crypto.Util.number)"
     # after much testing, this algorithm was deemed to be the fastest
     s = ''
-    n = long(n)
+    n = int(n)
     while (n != 0) and (n != -1):
         s = struct.pack('>I', n & 0xffffffffL) + s
         n = n >> 32
