@@ -51,6 +51,14 @@ default_keyfile = os.path.join(os.environ.get('HOME', '/'), '.ssh/id_rsa')
 default_passwd = None
 
 
+unittest.TestCase.original_run = unittest.TestCase.run
+def _run(self, result=None):
+    if self.stop_on_failure and (result.failures or result.errors):
+        return
+    self.original_run(result)
+unittest.TestCase.run = _run  
+
+
 def iter_suite_tests(suite):
     """Return all tests in a suite, recursing through nested suites"""
     for item in suite._tests:
@@ -77,6 +85,8 @@ def main():
     parser = OptionParser('usage: %prog [options]')
     parser.add_option('--verbose', action='store_true', dest='verbose', default=False,
                       help='verbose display (one line per test)')
+    parser.add_option('--stop-on-failure', action='store_true', dest='stop_on_failure', default=False,
+                      help='stop running tests once one fails')
     parser.add_option('--no-pkey', action='store_false', dest='use_pkey', default=True,
                       help='skip RSA/DSS private key tests (which can take a while)')
     parser.add_option('--no-transport', action='store_false', dest='use_transport', default=True,
@@ -104,6 +114,7 @@ def main():
     
     options, args = parser.parse_args()
     
+    unittest.TestCase.stop_on_failure = options.stop_on_failure
     # setup logging
     ssh.util.log_to_file('test.log')
     
