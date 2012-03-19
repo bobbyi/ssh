@@ -641,10 +641,10 @@ class SFTPClient (BaseSFTP):
             msg = Message()
             msg.add_int(self.request_number)
             for item in arg:
-                if isinstance(item, int):
-                    msg.add_int(item)
-                elif isinstance(item, long):
+                if isinstance(item, Int64):
                     msg.add_int64(item)
+                elif isinstance(item, int):
+                    msg.add_int(item)
                 elif isinstance(item, str):
                     msg.add_string(item)
                 elif isinstance(item, SFTPAttributes):

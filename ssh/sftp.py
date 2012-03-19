@@ -94,6 +94,12 @@ class SFTPError (Exception):
     pass
 
 
+class Int64(int):
+    """Wrapper around int to represent that the wrapped int
+    should be send over the wire as a 64-bit int.
+    """
+
+
 class BaseSFTP (object):
     def __init__(self, **kw):
         super(BaseSFTP, self).__init__(**kw)
