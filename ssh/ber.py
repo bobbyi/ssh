@@ -17,8 +17,13 @@
 # 51 Franklin Street, Suite 500, Boston, MA  02110-1335  USA.
 
 
+import sys
+
 from Crypto.Util.py3compat import bord, bchr
 from ssh import util
+
+if sys.version > '3':
+    long = int
 
 
 class BERException(Exception):

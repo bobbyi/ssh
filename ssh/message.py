@@ -20,10 +20,14 @@
 Implementation of an SSH2 "message".
 """
 
+import sys
 import struct
 import io
 
 from ssh import util
+
+if sys.version > '3':
+    long = int
 
 
 class Message (object):
@@ -281,9 +285,7 @@ class Message (object):
             return self.add_string(i)
         elif isinstance(i, bool):
             return self.add_boolean(i)
-        elif isinstance(i, int):
-            return self.add_int(i)
-        elif isinstance(i, long):
+        elif isinstance(i, (int, long)):
             if i > 0xffffffffL:
                 return self.add_mpint(i)
             else:
