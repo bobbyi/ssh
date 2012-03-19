@@ -286,7 +286,7 @@ class Message (object):
         elif isinstance(i, bool):
             return self.add_boolean(i)
         elif isinstance(i, (int, long)):
-            if i > 0xffffffffL:
+            if i > 0xffffffff:
                 return self.add_mpint(i)
             else:
                 return self.add_int(i)

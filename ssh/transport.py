@@ -362,7 +362,7 @@ class Transport (threading.Thread):
 
         @rtype: str
         """
-        out = '<ssh.Transport at %s' % hex(id(self) & 0xffffffffL)
+        out = '<ssh.Transport at %s' % hex(id(self) & 0xffffffff)
         if not self.active:
             out += ' (unconnected)'
         else:
@@ -1529,9 +1529,9 @@ class Transport (threading.Thread):
         # active=True occurs before the thread is launched, to avoid a race
         _active_threads.append(self)
         if self.server_mode:
-            self._log(DEBUG, 'starting thread (server mode): %s' % hex(id(self) & 0xffffffffL))
+            self._log(DEBUG, 'starting thread (server mode): %s' % hex(id(self) & 0xffffffff))
         else:
-            self._log(DEBUG, 'starting thread (client mode): %s' % hex(id(self) & 0xffffffffL))
+            self._log(DEBUG, 'starting thread (client mode): %s' % hex(id(self) & 0xffffffff))
         try:
             self.packetizer.write_all(self.local_version + '\r\n')
             self._check_banner()

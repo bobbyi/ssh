@@ -50,10 +50,10 @@ class MessageTest (unittest.TestCase):
 
         msg = Message()
         msg.add_int64(5)
-        msg.add_int64(0xf5e4d3c2b109L)
+        msg.add_int64(0xf5e4d3c2b109)
         msg.add_mpint(17)
-        msg.add_mpint(0xf5e4d3c2b109L)
-        msg.add_mpint(-0x65e4d3c2b109L)
+        msg.add_mpint(0xf5e4d3c2b109)
+        msg.add_mpint(-0x65e4d3c2b109)
         self.assertEquals(str(msg), self.__c)
 
     def test_2_decode(self):
@@ -73,15 +73,15 @@ class MessageTest (unittest.TestCase):
 
         msg = Message(self.__c)
         self.assertEquals(msg.get_int64(), 5)
-        self.assertEquals(msg.get_int64(), 0xf5e4d3c2b109L)
+        self.assertEquals(msg.get_int64(), 0xf5e4d3c2b109)
         self.assertEquals(msg.get_mpint(), 17)
-        self.assertEquals(msg.get_mpint(), 0xf5e4d3c2b109L)
-        self.assertEquals(msg.get_mpint(), -0x65e4d3c2b109L)
+        self.assertEquals(msg.get_mpint(), 0xf5e4d3c2b109)
+        self.assertEquals(msg.get_mpint(), -0x65e4d3c2b109)
 
     def test_3_add(self):
         msg = Message()
         msg.add(5)
-        msg.add(0x1122334455L)
+        msg.add(0x1122334455)
         msg.add(True)
         msg.add('cat')
         msg.add(['a', 'b'])
@@ -90,7 +90,7 @@ class MessageTest (unittest.TestCase):
     def test_4_misc(self):
         msg = Message(self.__d)
         self.assertEquals(msg.get_int(), 5)
-        self.assertEquals(msg.get_mpint(), 0x1122334455L)
+        self.assertEquals(msg.get_mpint(), 0x1122334455)
         self.assertEquals(msg.get_so_far(), self.__d[:13])
         self.assertEquals(msg.get_remainder(), self.__d[13:])
         msg.rewind()

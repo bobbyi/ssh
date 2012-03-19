@@ -44,7 +44,7 @@ class SFTPAttributes (object):
     FLAG_UIDGID = 2
     FLAG_PERMISSIONS = 4
     FLAG_AMTIME = 8
-    FLAG_EXTENDED = 0x80000000L
+    FLAG_EXTENDED = 0x80000000
 
     def __init__(self):
         """
@@ -200,7 +200,7 @@ class SFTPAttributes (object):
         else:
             ks = '?---------'
         # compute display date
-        if (self.st_mtime is None) or (self.st_mtime == 0xffffffffL):
+        if (self.st_mtime is None) or (self.st_mtime == 0xffffffff):
             # shouldn't really happen
             datestr = '(unknown date)'
         else:
