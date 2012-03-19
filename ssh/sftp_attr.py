@@ -77,8 +77,8 @@ class SFTPAttributes (object):
         attr.st_uid = obj.st_uid
         attr.st_gid = obj.st_gid
         attr.st_mode = obj.st_mode
-        attr.st_atime = obj.st_atime
-        attr.st_mtime = obj.st_mtime
+        attr.st_atime = int(obj.st_atime)
+        attr.st_mtime = int(obj.st_mtime)
         if filename is not None:
             attr.filename = filename
         return attr
@@ -139,8 +139,8 @@ class SFTPAttributes (object):
             msg.add_int(self.st_mode)
         if self._flags & self.FLAG_AMTIME:
             # throw away any fractional seconds
-            msg.add_int(long(self.st_atime))
-            msg.add_int(long(self.st_mtime))
+            msg.add_int(self.st_atime)
+            msg.add_int(self.st_mtime)
         if self._flags & self.FLAG_EXTENDED:
             msg.add_int(len(self.attr))
             for key, val in self.attr.items():
