@@ -87,7 +87,7 @@ class RSAKey (PKey):
 
     def sign_ssh_data(self, rpool, data):
         digest = SHA.new(data).digest()
-        rsa = RSA.construct((long(self.n), long(self.e), long(self.d)))
+        rsa = RSA.construct((self.n, self.e, self.d))
         sig = util.deflate_long(rsa.sign(self._pkcs1imify(digest), '')[0], 0)
         m = Message()
         m.add_string('ssh-rsa')
@@ -102,7 +102,7 @@ class RSAKey (PKey):
         # public key.  some wackiness ensues where we "pkcs1imify" the 20-byte
         # hash into a string as long as the RSA key.
         hash_obj = util.inflate_long(self._pkcs1imify(SHA.new(data).digest()), True)
-        rsa = RSA.construct((long(self.n), long(self.e)))
+        rsa = RSA.construct((self.n, self.e))
         return rsa.verify(hash_obj, (sig,))
 
     def _encode_key(self):
