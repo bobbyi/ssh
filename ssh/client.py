@@ -24,6 +24,7 @@ from binascii import hexlify
 import getpass
 import os
 import socket
+import sys
 import warnings
 
 from ssh.agent import Agent
@@ -35,8 +36,11 @@ from ssh.rsakey import RSAKey
 from ssh.ssh_exception import SSHException, BadHostKeyException
 from ssh.transport import Transport
 
+if sys.version > '3':
+    unicode = str
 
 SSH_PORT = 22
+
 
 class MissingHostKeyPolicy (object):
     """
@@ -324,7 +328,7 @@ class SSHClient (object):
 
         if key_filename is None:
             key_filenames = []
-        elif isinstance(key_filename, (str, unicode)):
+        elif isinstance(key_filename, (bytes, unicode)):
             key_filenames = [ key_filename ]
         else:
             key_filenames = key_filename

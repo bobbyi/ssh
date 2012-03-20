@@ -20,6 +20,7 @@
 L{AuthHandler}
 """
 
+import sys
 import threading
 import weakref
 
@@ -33,6 +34,9 @@ from ssh.message import Message
 from ssh.ssh_exception import SSHException, AuthenticationException, \
     BadAuthenticationType, PartialAuthentication
 from ssh.server import InteractiveQuery
+
+if sys.version > '3':
+    unicode = str
 
 
 class AuthHandler (object):
